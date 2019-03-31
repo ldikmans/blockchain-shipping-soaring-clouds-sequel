@@ -2,13 +2,25 @@
 const shim = require('fabric-shim');
 const util = require('util');
 
+// Enumerate shipment state values
+const shState = {
+    ISSUED: 1,
+    OFFERED: 2,
+    SELECTED: 3,
+    PICKEDUP: 4,
+    RECEIVED: 5,
+    ARRIVED: 6
+};
+
 var Chaincode = class {
+    
 
     /**
      //offer struct
      let offer = {
      'offerId' = string //unique offer id
      'orderId': string //the shipment it belongs to
+     'docType': string, default offer
      'shipper': string //the id of the shipper
      'deliveryDate': string //proposed deliveryDate
      'price': string //proposed price'
@@ -18,6 +30,7 @@ var Chaincode = class {
      //shipment struct
      let shipment ={
      'orderId': string //link it to the order in the webshop
+     'docType': string, default 'shipment' 
      'product': string //description of the product
      'customer': string //customer id
      'shippingAddress': string //shipping address
@@ -27,14 +40,15 @@ var Chaincode = class {
      'shipper': string //any connected shipper on the blockchain
      'price': decimal //price in euros
      'deliveryDate': integer //delivery date promised
-     'offer': offer //offer object
+     'offers': array //array of offers
+     'selectedOffer': offer
      'custodian': string //whoever currently holds the order
      'currentState':string //issues, received, selected, pickedup, 
      }        
      **/
     // Initialize the chaincode
     async Init(stub) {
-        console.info('=========  shipmnet Init =========');
+        console.info('=========  shipment Init =========');
         let ret = stub.getFunctionAndParameters();
         console.info(ret);
         return shim.success();
@@ -70,7 +84,7 @@ var Chaincode = class {
 
         shipment.docType = 'shipment';
 
-        if (args.length != 6) {
+        if (args.length !== 6) {
             throw new Error('Incorrect number of arguments. Expecting 6');
         }
 
@@ -104,9 +118,10 @@ var Chaincode = class {
             throw new Error('5th argument must be a numeric string');
         }
         shipment.custodian = args[5].toLowerCase();
+        shipment.currentState = shState.ISSUED;
         shipment.offers = [];
 
-        // ==== Check if vehicle already exists ====
+        // ==== Check if shipment already exists ====
         let shipmentAsBytes = await stub.getState(shipment.orderId);
         if (shipmentAsBytes.toString()) {
             console.info('This shipment already exists: ' + shipment.orderId);
@@ -114,28 +129,28 @@ var Chaincode = class {
             throw new Error(JSON.stringify(jsonResp));
         }
 
-        // ==== Create vehicle object and marshal to JSON ====
+        // ==== Create shipment object and marshal to JSON ====
         let shipmentJSONasBytes = Buffer.from(JSON.stringify(shipment));
 
-        // === Save vehicle to state ===
+        // === Save shipment to state ===
         await stub.putState(shipment.orderId, shipmentJSONasBytes);
 
-        // ==== Vehicle part saved and indexed. Return success ====
+        // ==== Shipment issued saved and indexed. Return success ====
         console.info('- end init shipment');
     }
 
     // =================================================
-    // readShipment - read a vehicle from chaincode state
+    // readShipment - read a shipment from chaincode state
     // =================================================
     async readShipment(stub, args, thisClass) {
         let jsonResp = {};
-        if (args.length != 1) {
-            throw new Error("Incorrect number of arguments. Expecting oder id  of the shipment to query");
+        if (args.length !== 1) {
+            throw new Error("Incorrect number of arguments. Expecting order id  of the shipment to query");
         }
 
         let orderId = args[0];
 
-        let valAsbytes = await stub.getState(orderId); //get the vehicle from chaincode state
+        let valAsbytes = await stub.getState(orderId); //get the shipment from chaincode state
         if (!valAsbytes.toString()) {
             console.info("Failed to get state for " + orderId);
             jsonResp.Error = "Failed to get state for " + orderId;
@@ -146,12 +161,12 @@ var Chaincode = class {
     }    
 
     // ==========================================================
-    // deleteVehicle - remove a vehicle key/value pair from state
+    // deleteShipment - remove a shipment key/value pair from state
     // ==========================================================
     async deleteShipment(stub, args, thisClass) {
         let jsonResp = {};
 
-        if (args.length != 1) {
+        if (args.length !==1) {
             throw new Error("Incorrect number of arguments. Expecting 1");
         }
         let orderId = args[0];
@@ -168,7 +183,7 @@ var Chaincode = class {
         try {
             shipment = JSON.parse(valAsbytes.toString('utf8'));
         } catch (err) {
-            console.info("Failed to decode JSON of: " + oderId);
+            console.info("Failed to decode JSON of: " + orderId);
             jsonResp.Error = "Failed to decode JSON of: " + orderId;
             throw new Error(JSON.stringify(jsonResp));
         }
@@ -179,33 +194,38 @@ var Chaincode = class {
 
     }
 
-    // ======================================================================
-    // offer a shipment price and date
-    // ======================================================================
-    async offerShipment(stub, args, thisClass) {
-        //to be implemented
-        console.info('offering shipment, not implemented yet');
-
+    /**
+     * offer a delivery for a shipment that has been issued. This will only be accepted if the offer is not already selected (state must be issued or offered)
+     * @param {type} stub
+     * @param {type} args offerId, orderId, shipper, price, deliveryDate
+     * @param {type} thisClass
+     * @returns {undefined}
+     */
+    async offerDelivery(stub, args, thisClass) {
+        
+        let offer = {};
         let jsonResp = {};
-        //   0       1       2
-        // "name", "from", "to"
+
+        offer.docType = 'offer';
+        
+        // "offerId", "orderId", "shipper", "price", "deliveryDate"
         if (args.length < 5) {
-            throw new Error("Incorrect number of arguments. Expecting 5");
+            throw new Error("Incorrect number of arguments. Expecting 5: offerId, orderId, shipper, price, deliveryDate");
         }
 
-        let offerId = args[0]
+        let offerId = args[0];
         let orderId = args[1];
         let shipper = args[2];
-        let price = args[3];
-        if (typeof price !== 'decimal') {
+        let price = Number(args[3]);
+        if (typeof price !== 'number') {
             throw new Error('3rd argument must be a decimal string');
         }
-        let deliveryDate = args[4];
+        let deliveryDate = parseInt(args[4]);
         if (typeof deliveryDate !== 'number') {
             throw new Error('4th argument must be a numeric string');
         }
 
-        console.info("- start offer shipping ", orderId, shipper, price, deliveryDate);
+        console.info("- start offer delivery ", offerId, orderId, shipper, price, deliveryDate);
 
         let shipmentAsBytes = await stub.getState(orderId);
         if (!shipmentAsBytes.toString()) {
@@ -222,11 +242,16 @@ var Chaincode = class {
             jsonResp.Error = "Failed to decode shipment: " + orderId;
             throw new Error(JSON.stringify(jsonResp));
         }
-
-        let offer = {};
+        
+        //check if the shipments can still be offered
+        if((shipment.currentState !== shState.ISSUED) && (shipment.currentState !== shState.OFFERED)){
+            console.info("delivery can't be offered anymore, state is " + shipment.currentState);
+            jsonResp.Error = "delivery can't be offered anymore, state is " + shipment.currentState;
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
 
         offer.offerId = offerId;
-        offer.shipper = shipper; //change the owner
+        offer.shipper = shipper; //name of the shipper
         offer.deliveryDate = deliveryDate; //set the proposed deliver date
         offer.price = price; //set the proposed price
 
@@ -235,37 +260,202 @@ var Chaincode = class {
         }
 
         shipment.offers.push(offer);
+        if(shipment.currentState === shState.ISSUED){
+            shipment.currentState = shState.OFFERED;
+        }
 
         let shipmentJSONBytes = Buffer.from(JSON.stringify(shipment));
-
         await stub.putState(orderId, shipmentJSONBytes); //rewrite the shipment
-
-        console.info("- end offerShipment (success)");
-
-
-
+        
+        console.info("- end offerdelivery (success)");
+        
     }
 
-    // ======================================================================
-    // select a shipment offer
-    // ======================================================================
+/**
+ * 
+ * select the shipment out of an array of all offers
+ * @param {type} stub
+ * @param {type} args
+ * @param {type} thisClass
+ * @returns {undefined}
+ */
     async selectShipmentOffer(stub, args, thisClass) {
-        //to be implemented
-        console.info('selecting a shipment offer not implemented yet');
-    }
+        
+        let jsonResp = {};
+               
+        // "offerId", "orderId", 
+        if (args.length < 2) {
+            throw new Error("Incorrect number of arguments. Expecting 2: offerId, orderId");
+        }
 
-    // ======================================================================
-    // Pickup shipment from current custodian
-    // ======================================================================
+        let offerId = args[0];
+        let orderId = args[1];
+       
+        console.info("- start selecting delivery ", offerId, orderId);
+        
+        let shipmentAsBytes = await stub.getState(orderId);
+        if (!shipmentAsBytes.toString()) {
+            console.info("Failed to get shipment: ", orderId);
+            jsonResp.Error = "Failed to get shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+
+        let shipment = {};
+        try {
+            shipment = JSON.parse(shipmentAsBytes.toString('utf8'));
+        } catch (err) {
+            console.info("Failed to decode shipment: ", orderId);
+            jsonResp.Error = "Failed to decode shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+        
+        //check if the shipment is in the state offered
+        if(shipment.currentState !== shState.OFFERED ){
+            console.info("offer can't be selected , state is " + shipment.currentState);
+            jsonResp.Error = "offer can't be selected, state is " + shipment.currentState;
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+
+        
+        if (!shipment.offers) {
+            console.info("offer can't be selected , there are no offers");
+            jsonResp.Error = "offer can't be selected, there are no offers";
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+
+        let offer = shipment.offers.find(x=>x.offerId===offerId);
+        let selectedOffer = Object.assign({}, offer);
+        
+        shipment.currentState = shState.SELECTED;
+        shipment.selectedOffer = selectedOffer;
+        
+
+        let shipmentJSONBytes = Buffer.from(JSON.stringify(shipment));
+        await stub.putState(orderId, shipmentJSONBytes); //rewrite the shipment
+        
+        console.info("- end offer selected (success)");
+        
+        
+        
+     }
+
+    /**
+     *  Pick up the shipment from the current custodian
+     * @param {type} stub
+     * @param {type} args an array with orderId and shipper
+     * @param {type} thisClass
+     * @returns {undefined}
+     */
     async pickupShipment(stub, args, thisClass) {
-        console.info('picking up Shipmnet, not implemented yet');
+        
+     let jsonResp = {};
+        //   0       1       
+        // "orderId", "shipper"
+        if (args.length < 2) {
+            throw new Error("Incorrect number of arguments. Expecting 2: orderId, shipper");
+        }
+
+        let orderId = args[0];
+        let shipper = args[1];
+        
+        console.info("- start picking up delivery ", orderId);
+        
+        let shipmentAsBytes = await stub.getState(orderId);
+        if (!shipmentAsBytes.toString()) {
+            console.info("Failed to get shipment: ", orderId);
+            jsonResp.Error = "Failed to get shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+
+        let shipment = {};
+        try {
+            shipment = JSON.parse(shipmentAsBytes.toString('utf8'));
+        } catch (err) {
+            console.info("Failed to decode shipment: ", orderId);
+            jsonResp.Error = "Failed to decode shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+        
+        //check if the shipment is in the state selected
+        if(shipment.currentState !== shState.SELECTED ){
+            console.info("offer can't be picked up , state is " + shipment.currentState);
+            jsonResp.Error = "offer can't be picked up, state is " + shipment.currentState;
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+
+        if (!shipment.selectedOffer) {
+            console.info("offer can't be picked up , there is no shipper selected");
+            jsonResp.Error = "offer can't be selected, there is no shipper selected";
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+        
+        shipment.currentState = shState.PICKEDUP;
+        shipment.custodian = shipper;
+        
+
+        let shipmentJSONBytes = Buffer.from(JSON.stringify(shipment));
+        await stub.putState(orderId, shipmentJSONBytes); //rewrite the shipment
+        
+        console.info("- end offer pickedup (success)");
     }
 
-    // ======================================================================
-    // Receive shipment 
-    // ======================================================================
+    
+    /**
+     * Receive shipment
+     * @param {type} stub
+     * @param {type} args an arary of 1  that contains the orderId 
+     * @param {type} thisClass 
+     * @returns {undefined} nothing
+     */
     async receiveShipment(stub, args, thisClass) {
-        console.info("received shipment, not implemented yet");
+        let jsonResp = {};
+             
+        // "orderId", 
+        if (args.length < 1) {
+            throw new Error("Incorrect number of arguments. Expecting 1: orderId");
+        }
+
+        let orderId = args[0];
+        
+        console.info("- start receive delivery ", orderId);
+        
+        let shipmentAsBytes = await stub.getState(orderId);
+        if (!shipmentAsBytes.toString()) {
+            console.info("Failed to get shipment: ", orderId);
+            jsonResp.Error = "Failed to get shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+
+        let shipment = {};
+        try {
+            shipment = JSON.parse(shipmentAsBytes.toString('utf8'));
+        } catch (err) {
+            console.info("Failed to decode shipment: ", orderId);
+            jsonResp.Error = "Failed to decode shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+        
+        //check if the shipment is in the state PICKEDUP
+        if(shipment.currentState !== shState.PICKEDUP ){
+            console.info("offer can't be picked up , state is " + shipment.currentState);
+            jsonResp.Error = "offer can't be picked up, state is " + shipment.currentState;
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+
+        if (!shipment.selectedOffer) {
+            console.info("offer can't be picked up , there is no shipper selected");
+            jsonResp.Error = "offer can't be picked up, there is no shipper selected";
+            throw new ERROR(JSON.stringify(jsonResp));
+        }   
+        
+        shipment.currentState = shState.RECEIVED;
+        shipment.custodian = shipment.customer;
+        
+
+        let shipmentJSONBytes = Buffer.from(JSON.stringify(shipment));
+        await stub.putState(orderId, shipmentJSONBytes); //rewrite the shipment
+        
+        console.info("- end offer received (success)");
     }
 
    
@@ -283,34 +473,13 @@ var Chaincode = class {
 
         let custodian = args[0].toLowerCase();
 
-        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.custodian') = '[\"shipment\",\"%s\",\"%s\"]'", custodian);
+        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.custodian') = '[\"shipment\",\"%s\"]'", custodian);
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
 
         return queryResults;
-    }
-    
-      // ===== Example: Parameterized rich query =================================================
-    // queryShipmentByCustodian queries for shipments based on a passed in custodian
-    // This is an example of a parameterized query where the query logic is baked into the chaincode,
-    // and accepting a single query parameter (custodian).
-    // =========================================================================================
-    async queryShipmentByCustodian(stub, args, thisClass) {
-
-        if (args.length !== 1) {
-            throw new Error("Incorrect number of arguments. Expecting 1");
-        }
-
-        let custodian = args[0].toLowerCase();
-
-        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.custodian') = '[\"shipment\",\"%s\",\"%s\"]'", custodian);
-
-        let method = thisClass['getQueryResultForQueryString'];
-        let queryResults = await method(stub, queryString, thisClass);
-
-        return queryResults;
-    }
+    };
     
     
     // ===== Example: Parameterized rich query =================================================
@@ -324,9 +493,9 @@ var Chaincode = class {
             throw new Error("Incorrect number of arguments. Expecting 1");
         }
 
-        let product = args[0].toLowerCase();
+        let customer = args[0].toLowerCase();
 
-        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.product') = '[\"shipment\",\"%s\"]'", product);
+        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.customer') = '[\"shipment\",\"%s\"]'", customer);
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
@@ -356,18 +525,18 @@ var Chaincode = class {
         return queryResults;
     }
     // ===== Example: Ad hoc rich query ========================================================
-    // queryVehiclePart uses a query string to perform a query for vehiclePart.
+    // queryShipment uses a query string to perform a query for shipmnet.
     // Query string matching state database syntax is passed in and executed as is.
     // Supports ad hoc queries that can be defined at runtime by the client.
     // =========================================================================================
-    async queryShipment(stub, args, thisClass) {
+    async readAllShipments(stub, args, thisClass) {
 
         // "queryString"
-        if (args.length < 1) {
-            throw new Error("Incorrect number of arguments. Expecting 1");
+        if (args.length !== 0) {
+            throw new Error("Incorrect number of arguments. Expecting none");
         }
 
-        let queryString = args[0];
+        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType') = 'shipment'");
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
