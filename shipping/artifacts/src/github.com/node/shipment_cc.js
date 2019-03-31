@@ -260,7 +260,7 @@ var Chaincode = class {
         }
 
         shipment.offers.push(offer);
-        if(shipment.currentState === sh.State.ISSUED){
+        if(shipment.currentState === shState.ISSUED){
             shipment.currentState = shState.OFFERED;
         }
 
@@ -323,7 +323,7 @@ var Chaincode = class {
             throw new ERROR(JSON.stringify(jsonResp));
         }
 
-        let offer = shipment.offers[offerId];
+        let offer = shipment.offers.find(x=>x.offerId===offerId);
         let selectedOffer = Object.assign({}, offer);
         
         shipment.currentState = shState.SELECTED;
@@ -444,9 +444,9 @@ var Chaincode = class {
 
         if (!shipment.selectedOffer) {
             console.info("offer can't be picked up , there is no shipper selected");
-            jsonResp.Error = "offer can't be selected, there is no shipper selected";
+            jsonResp.Error = "offer can't be picked up, there is no shipper selected";
             throw new ERROR(JSON.stringify(jsonResp));
-        }
+        }   
         
         shipment.currentState = shState.RECEIVED;
         shipment.custodian = shipment.customer;
