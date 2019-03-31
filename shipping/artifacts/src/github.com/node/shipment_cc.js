@@ -225,7 +225,7 @@ var Chaincode = class {
             throw new Error('4th argument must be a numeric string');
         }
 
-        console.info("- start offer delivery ", orderId, shipper, price, deliveryDate);
+        console.info("- start offer delivery ", offerId, orderId, shipper, price, deliveryDate);
 
         let shipmentAsBytes = await stub.getState(orderId);
         if (!shipmentAsBytes.toString()) {
@@ -244,14 +244,14 @@ var Chaincode = class {
         }
         
         //check if the shipments can still be offered
-        if(shipment.currentState !== shState.ISSUED || shipment.currentState !== shState.OFFERED){
+        if((shipment.currentState !== shState.ISSUED) || (shipment.currentState !== shState.OFFERED)){
             console.info("delivery can't be offered anymore, state is " + shipment.currentState);
             jsonResp.Error = "delivery can't be offered anymore, state is " + shipment.currentState;
             throw new ERROR(JSON.stringify(jsonResp));
         }
 
         offer.offerId = offerId;
-        offer.shipper = shipper; //change the owner
+        offer.shipper = shipper; //name of the shipper
         offer.deliveryDate = deliveryDate; //set the proposed deliver date
         offer.price = price; //set the proposed price
 
