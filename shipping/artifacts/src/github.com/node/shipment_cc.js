@@ -183,7 +183,7 @@ var Chaincode = class {
         try {
             shipment = JSON.parse(valAsbytes.toString('utf8'));
         } catch (err) {
-            console.info("Failed to decode JSON of: " + oderId);
+            console.info("Failed to decode JSON of: " + orderId);
             jsonResp.Error = "Failed to decode JSON of: " + orderId;
             throw new Error(JSON.stringify(jsonResp));
         }
@@ -197,7 +197,7 @@ var Chaincode = class {
     /**
      * offer a delivery for a shipment that has been issued. This will only be accepted if the offer is not already selected (state must be issued or offered)
      * @param {type} stub
-     * @param {type} args
+     * @param {type} args offerId, orderId, shipper, price, deliveryDate
      * @param {type} thisClass
      * @returns {undefined}
      */
@@ -208,9 +208,7 @@ var Chaincode = class {
 
         offer.docType = 'offer';
         
-        let jsonResp = {};
-        //   0       1       2
-        // "name", "from", "to"
+        // "offerId", "orderId", "shipper", "price", "deliveryDate"
         if (args.length < 5) {
             throw new Error("Incorrect number of arguments. Expecting 5: offerId, orderId, shipper, price, deliveryDate");
         }
@@ -222,7 +220,7 @@ var Chaincode = class {
         if (typeof price !== 'decimal') {
             throw new Error('3rd argument must be a decimal string');
         }
-        let deliveryDate = args[4];
+        let deliveryDate = parseInt(args[4]);
         if (typeof deliveryDate !== 'number') {
             throw new Error('4th argument must be a numeric string');
         }
@@ -273,14 +271,18 @@ var Chaincode = class {
         
     }
 
-    // ======================================================================
-    // select a shipment offer
-    // ======================================================================
+/**
+ * 
+ * select the shipment out of an array of all offers
+ * @param {type} stub
+ * @param {type} args
+ * @param {type} thisClass
+ * @returns {undefined}
+ */
     async selectShipmentOffer(stub, args, thisClass) {
         
         let jsonResp = {};
-        let jsonResp = {};
-        //   0       1       
+               
         // "offerId", "orderId", 
         if (args.length < 2) {
             throw new Error("Incorrect number of arguments. Expecting 2: offerId, orderId");
@@ -337,14 +339,16 @@ var Chaincode = class {
         
      }
 
-    // ======================================================================
-    // Pickup shipment from current custodian
-    // ======================================================================
+    /**
+     *  Pick up the shipment from the current custodian
+     * @param {type} stub
+     * @param {type} args an array with orderId and shipper
+     * @param {type} thisClass
+     * @returns {undefined}
+     */
     async pickupShipment(stub, args, thisClass) {
         
-        let jsonResp = {};
-        
-        let jsonResp = {};
+     let jsonResp = {};
         //   0       1       
         // "orderId", "shipper"
         if (args.length < 2) {
@@ -395,14 +399,17 @@ var Chaincode = class {
         console.info("- end offer pickedup (success)");
     }
 
-    // ======================================================================
-    // Receive shipment 
-    // ======================================================================
+    
+    /**
+     * Receive shipment
+     * @param {type} stub
+     * @param {type} args an arary of 1  that contains the orderId 
+     * @param {type} thisClass 
+     * @returns {undefined} nothing
+     */
     async receiveShipment(stub, args, thisClass) {
-       let jsonResp = {};
-        
         let jsonResp = {};
-        //   0       1       
+             
         // "orderId", 
         if (args.length < 1) {
             throw new Error("Incorrect number of arguments. Expecting 1: orderId");
@@ -466,34 +473,13 @@ var Chaincode = class {
 
         let custodian = args[0].toLowerCase();
 
-        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.custodian') = '[\"shipment\",\"%s\",\"%s\"]'", custodian);
+        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.custodian') = '[\"shipment\",\"%s\"]'", custodian);
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
 
         return queryResults;
-    }
-    
-      // ===== Example: Parameterized rich query =================================================
-    // queryShipmentByCustodian queries for shipments based on a passed in custodian
-    // This is an example of a parameterized query where the query logic is baked into the chaincode,
-    // and accepting a single query parameter (custodian).
-    // =========================================================================================
-    async queryShipmentByCustodian(stub, args, thisClass) {
-
-        if (args.length !== 1) {
-            throw new Error("Incorrect number of arguments. Expecting 1");
-        }
-
-        let custodian = args[0].toLowerCase();
-
-        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType', '$.custodian') = '[\"shipment\",\"%s\",\"%s\"]'", custodian);
-
-        let method = thisClass['getQueryResultForQueryString'];
-        let queryResults = await method(stub, queryString, thisClass);
-
-        return queryResults;
-    }
+    };
     
     
     // ===== Example: Parameterized rich query =================================================
@@ -539,18 +525,18 @@ var Chaincode = class {
         return queryResults;
     }
     // ===== Example: Ad hoc rich query ========================================================
-    // queryShipment uses a query string to perform a query for vehiclePart.
+    // queryShipment uses a query string to perform a query for shipmnet.
     // Query string matching state database syntax is passed in and executed as is.
     // Supports ad hoc queries that can be defined at runtime by the client.
     // =========================================================================================
-    async queryShipment(stub, args, thisClass) {
+    async readAllShipments(stub, args, thisClass) {
 
         // "queryString"
-        if (args.length < 1) {
-            throw new Error("Incorrect number of arguments. Expecting 1");
+        if (args.length !== 0) {
+            throw new Error("Incorrect number of arguments. Expecting none");
         }
 
-        let queryString = args[0];
+        let queryString =  let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType') = '[\"shipment\"]'");
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
