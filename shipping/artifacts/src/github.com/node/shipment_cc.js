@@ -536,7 +536,7 @@ var Chaincode = class {
             throw new Error("Incorrect number of arguments. Expecting none");
         }
 
-        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType') = '[\"shipment\"]'");
+        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType') = 'shipment'");
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
