@@ -244,7 +244,7 @@ var Chaincode = class {
         }
         
         //check if the shipments can still be offered
-        if((shipment.currentState !== shState.ISSUED) || (shipment.currentState !== shState.OFFERED)){
+        if((shipment.currentState !== shState.ISSUED) && (shipment.currentState !== shState.OFFERED)){
             console.info("delivery can't be offered anymore, state is " + shipment.currentState);
             jsonResp.Error = "delivery can't be offered anymore, state is " + shipment.currentState;
             throw new ERROR(JSON.stringify(jsonResp));
