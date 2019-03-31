@@ -1,6 +1,6 @@
 {
     "name": "shipment_cc",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "private": true,
     "description": "shipment_cc chaincode implemented in node.js",
     "engines": {

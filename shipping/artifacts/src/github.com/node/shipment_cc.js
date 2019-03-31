@@ -216,8 +216,8 @@ var Chaincode = class {
         let offerId = args[0];
         let orderId = args[1];
         let shipper = args[2];
-        let price = args[3];
-        if (typeof price !== 'decimal') {
+        let price = Number(args[3]);
+        if (typeof price !== 'number') {
             throw new Error('3rd argument must be a decimal string');
         }
         let deliveryDate = parseInt(args[4]);
