@@ -1,0 +1,26 @@
+{
+    "name": "ShippingBackend",
+    "version": "1.0.0",
+    "license": "MIT",
+    "description": "backend to call the shipping chaincode from the webshop",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ldikmans/blockchain-shipping-soaring-clouds-sequel"
+    },
+    "keywords": [
+        "microservice",
+        "blockchain",
+        "server",
+        "shipping"
+    ],
+    "author": "ldikmans",
+    "contributors": [],
+    "main": "server.js",
+    "dependencies": {
+        "request": "2.88.0",
+        "request-promise": "4.2.4",
+        "express": "~4.16.2",
+        "winston": "~3.1.0",
+        "cors": "~2.8.4"
+    }
+}

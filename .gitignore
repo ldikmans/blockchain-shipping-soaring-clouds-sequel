@@ -5,3 +5,5 @@ shipping/artifacts/src/github.com/node/nbproject/project.properties
 /shipping/backend/src/shippingBackend/nbproject/private/
 *.zip
 shipping/artifacts/src/github.com/node/node_modules/
+shipping/backend/src/shippingBackend/nbproject/
+shipping/backend/src/shippingBackend/node_modules/

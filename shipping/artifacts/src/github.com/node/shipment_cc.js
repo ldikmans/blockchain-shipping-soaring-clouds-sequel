@@ -25,7 +25,17 @@ var Chaincode = class {
      'deliveryDate': string //proposed deliveryDate
      'price': string //proposed price'
      }
-     
+    
+    //address struct
+    let address = {
+     'type': string // 'DELIVERY'
+    'docType': string default 'address'
+    'streetName': string
+    'streetNumber': string
+    'city': string
+    'postcode': string
+    'country': string ISO 3166-1 alpha-2 format
+    
      
      //shipment struct
      let shipment ={
@@ -33,7 +43,7 @@ var Chaincode = class {
      'docType': string, default 'shipment' 
      'product': string //description of the product
      'customer': string //customer id
-     'shippingAddress': string //shipping address
+     'shippingAddress': address //shipping address
      'docType': string, default 'shipment'    //docType  is used to distinguish the various types of objects in state database
      'issuer': string
      'orderDate'': integer
@@ -80,12 +90,14 @@ var Chaincode = class {
     async issueShipment(stub, args, thisClass) {
 
         let shipment = {};
+        let address = {};
         let jsonResp = {};
 
         shipment.docType = 'shipment';
+        address.docType = 'address';
 
-        if (args.length !== 6) {
-            throw new Error('Incorrect number of arguments. Expecting 6');
+        if (args.length !== 10) {
+            throw new Error('Incorrect number of arguments. Expecting 10');
         }
 
         // ==== Input sanitation ====
@@ -100,24 +112,43 @@ var Chaincode = class {
             throw new Error('3rd argument must be a non-empty string for customer');
         }
         if (args[3].length <= 0) {
-            throw new Error('4th argument must be a non-empty string for shippingAddress');
+            throw new Error('4th argument must be a non-empty string for streetName');
         }
-        if (args[4].length <= 0) {
-            throw new Error('5th argument must be a non-empty string for orderDate');
+        if (args[4].length <= 0){
+             throw new Error('5th argument must be a non-empty string for streetNumber');
         }
-         if (args[5].length <= 0) {
-            throw new Error('6th argument must be a non-empty string for custodian');
+        if (args[5].length <= 0){
+             throw new Error('6th argument must be a non-empty string for city');
+        }
+        if (args[6].length <= 0){
+             throw new Error('7th argument must be a non-empty string for postcode');
+        }
+        if (args[7].length <= 0){
+             throw new Error('8th argument must be a non-empty string for country');
+        }
+        if (args[8].length <= 0) {
+            throw new Error('9th argument must be a non-empty string for orderDate');
+        }
+        if (args[9].length <= 0) {
+            throw new Error('10th argument must be a non-empty string for custodian');
         }
 
         shipment.orderId = args[0];
-        shipment.product = args[1].toLowerCase();
-        shipment.customer = args[2].toLowerCase();
-        shipment.shippingAddress = args[3];
-        shipment.orderDate = parseInt(args[4]);
+        shipment.product = args[1];
+        shipment.customer = args[2];
+        
+        address.streetName = args[3];
+        address.streetNumber = args[4];
+        address.city = args[5];
+        address.postcode = args[6];
+        address.country = args[7];
+        shipment.shippingAddress = address;
+        
+        shipment.orderDate = parseInt(args[8]);
         if (typeof shipment.orderDate !== 'number') {
             throw new Error('5th argument must be a numeric string');
         }
-        shipment.custodian = args[5].toLowerCase();
+        shipment.custodian = args[9].toLowerCase();
         shipment.currentState = shState.ISSUED;
         shipment.offers = [];
 
