@@ -1,4 +1,5 @@
 const chaincodeapi = require('./shippingChaincodeAPI');
+const mapper = require('./shipmentMapper');
 const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
 const version = process.env.VERSION || '1.0.9';
@@ -19,7 +20,7 @@ exports.getShipments = async function (req, res, next) {
         let shipments = [];
         if(jsonResponseBody && jsonResponseBody.length > 0){
             for (i=0; i < jsonResponseBody.length; i++){
-                let shipment = mapShipment(JSON.parse(jsonResponseBody[i].valueJson));
+                let shipment = mapper.mapShipment(JSON.parse(jsonResponseBody[i].valueJson));
                 shipments.push(shipment);
             }
         }
@@ -31,71 +32,98 @@ exports.getShipments = async function (req, res, next) {
     }
 };
 
-function mapShipment(valueJson){
-   
-    let offers = valueJson.offers;
-    let cleanedOffers =[];
-    offers.forEach(function(offer){
-        delete(offer.docType);
-        cleanedOffers.push(offer);
-    });
-    
-    let selectedOffer = valueJson.selectedOffer;
-    if(selectedOffer){
-        delete(selectedOffer.docType);
-    }
-    let shipment = {
-        'orderId': valueJson.orderId,
-        'product': valueJson.product,
-        'customer': valueJson.customer,
-        'shippingAddress': valueJson.address,
-        'orderDate': valueJson.orderDate,
-        'shipper': valueJson.shipper,
-        'price': valueJson.price,
-        'deliveryDate': valueJson.deliveryDate,
-        'offers': cleanedOffers,
-        'selectedOffer': selectedOffer,
-        'custodian': valueJson.custodian,
-        'currentState': valueJson.currentState
-    };
-    return shipment;
-}
-
 exports.issueShipmentRequest = async function (req, res, next) {
     try{
         requestBody.method = 'issueShipment';
-        requestBody.args = '';
+        requestBody.args = mapper.mapRequestBodyToArgs(req.body);
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         res.send(responseBody);
     }
     catch(error){
+        console.error(error);
         next(error);
     }
 };
 
-exports.getDetails = function (req, res) {
-    console.log("not implemented yet");
-    res.send("not implemented yet");
+exports.getDetails = async function (req, res, next) {
+     try{
+        let orderId = req.params._orderId;
+        if(!orderId){
+            throw new Error('unable to read _orderId');
+        }
+        requestBody.method = 'readShipment';
+        requestBody.args.push(orderId);
+        let responseBody = await chaincodeapi.invokeMethod(requestBody);
+        res.send(responseBody);
+    }
+    catch(error){
+        console.error(error);
+        next(error);
+    }
 };
 
-exports.selectShipment = function (req, res) {
-    console.log("not implemented yet");
-    res.send("not implemented yet");
+exports.pickupShipment = async function (req, res) {
+    try{
+        let orderId = req.params._orderId;
+        if(!orderId){
+            throw new Error('unable to read _orderId');
+        }
+        if(!req.body.shipper){
+            throw new Error('shipper is mandatory');
+        }
+        requestBody.method = 'pickupShipment';
+        requestBody.args.push(orderId);
+        requestBody.args.push(req.body.shipper);
+        let responseBody = await chaincodeapi.invokeMethod(requestBody);
+        res.send(responseBody);
+    }
+    catch(error){
+        console.error(error);
+        next(error);
+    }
 };
 
-exports.pickupShipment = function (req, res) {
-    console.log("not implemented yet");
-    res.send("not implemented yet");
+exports.receiveShipment = async function (req, res) {
+     try{
+        let orderId = req.params._orderId;
+        if(!orderId){
+            throw new Error('unable to read _orderId');
+        }
+        if(!req.body.shipper){
+            throw new Error('shipper is mandatory');
+        }
+        requestBody.method = 'receiveShipment';
+        requestBody.args.push(orderId);
+        requestBody.args.push(req.body.shipper);
+        let responseBody = await chaincodeapi.invokeMethod(requestBody);
+        res.send(responseBody);
+    }
+    catch(error){
+        console.error(error);
+        next(error);
+    }
 };
 
-exports.receiveShipment = function (req, res) {
-    console.log("not implemented yet");
-    res.send("not implemented yet");
+exports.deleteShipment = async function (req, res) {
+     try{
+        let orderId = req.params._orderId;
+        if(!orderId){
+            throw new Error('unable to read _orderId');
+        }
+        requestBody.method = 'deleteShipment';
+        requestBody.args.push(orderId);
+        requestBody.args.push(req.body.shipper);
+        let responseBody = await chaincodeapi.invokeMethod(requestBody);
+        if(responseBody.returnCode === 'Success'){
+            res.status(204).send();
+        }
+        else{
+            res.status(500).send(responseBody);
+        }
+    }
+    catch(error){
+        console.error(error);
+        next(error);
+    }
 };
-
-exports.deleteShipment = function (req, res) {
-    console.log("not implemented yet");
-    res.send("not implemented yet");
-};
-
 

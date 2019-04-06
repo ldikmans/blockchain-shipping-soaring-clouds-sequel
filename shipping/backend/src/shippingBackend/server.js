@@ -43,28 +43,43 @@ router.get('/health', function (req, res) {
     });
 });
 
-app.route('/shippermarketplace/shipments/:_id')
+app.route('/shippermarketplace/shipments/:_orderId')
 
-        .get(function (req, res) {
+        .get(function (req, res, next) {
             logger.debug("getting shipment details");
-            shipment.getDetails(req, res);
+            try{
+                shipment.getDetails(req, res, next);
+            }catch(error){
+                next(error);
+            }
         })
-        .post(function (req, res) {
-            logger.debug("select a shipment");
-            shipment.selectShipment(req, res);
-        })
-        .put(function (req, res) {
+        .put(function (req, res, next) {
             logger.debug("pickup or receive a shipment");
             let event = req.body.event;
             if (event === 'PICKUP') {
-                shipment.pickupShipment(req, res);
-            } else {
-                shipment.receiveShipment(req, res);
+                try{
+                    shipment.pickupShipment(req, res, next);
+                } catch(error){
+                    next (error);
+                }
+            } else if (event === 'RECEIVE'){
+                try{
+                    shipment.receiveShipment(req, res, next);
+                } catch(error){
+                    next(error);
+                }
+            }else{
+                logger.debug('event should be either PICUP or RECEIVE but is ' + event);
+                next(new Error('event should be either PICKUP or RECEIVE'));
             }
         })
-        .delete(function (req, res) {
+        .delete(function (req, res, next) {
             logger.debug("deleting shipment");
-            shipment.deleteShipment(req, res);
+            try{
+                shipment.deleteShipment(req, res, next);
+            } catch(error){
+                next(error);
+            }
         });
 
 app.route('/shippermarketplace/shipments')
@@ -79,8 +94,27 @@ app.route('/shippermarketplace/shipments')
         })
         .post(function (req, res, next) {
             logger.debug("issueShipment");
-            try{
+            try {
                 shipment.issueShipmentRequest(req, res, next);
+            } catch (error) {
+                next(error);
+            }
+        });
+
+
+app.route('shippermarketplace/offers/:_offerId')
+        .get(function (req, res, next) {
+            logger.debug('fetching the offer');
+            try{
+                offer.getOfferDetails(req, res, next);
+            }catch(error){
+                next(error);
+            }
+        })
+        .put(function (req, res, next) {
+            logger.debug('selecting an offer');
+            try{
+                offer.selectOffer(req, res, next);
             }catch(error){
                 next(error);
             }
@@ -88,15 +122,33 @@ app.route('/shippermarketplace/shipments')
 
 
 app.route('/shippermarketplace/offers')
-        .get(function (req, res) {
+        .get(function (req, res, next) {
             logger.debug("fetching offers");
-            offer.getOffers(req, res);
+            try{
+                offer.getOffers(req, res, next);
+            }catch(error){
+                next(error);
+            }
         })
-        .post(function (req, res) {
+        .post(function (req, res, next) {
             logger.debug("offering a delivery for shipment");
-            offer.offerDelivery(req, res);
+            try{
+                offer.offerDelivery(req, res, next);
+            }catch(error){
+                next(error);
+            }
 
+        }).
+        put(function (req, res, next) {
+            logger.debug("selecting an offer for shipment");
+            try{
+                offer.selectOffer(req, res, next);
+            }catch(error){
+                next(error);
+            }
         });
+
+
 
 // all of our routes will be prefixed with /shipment
 app.use('/shippermarketplace', router);

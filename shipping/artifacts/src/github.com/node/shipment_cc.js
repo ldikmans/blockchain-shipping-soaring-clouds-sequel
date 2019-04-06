@@ -202,8 +202,7 @@ var Chaincode = class {
         }
         let orderId = args[0];
 
-        // to maintain the manufacturer~chassisNumber index, we need to read the vehicle first and get its assembler
-        let valAsbytes = await stub.getState(orderId); //get the vehicle from chaincode state
+        let valAsbytes = await stub.getState(orderId); //get the shipment from chaincode state
         if (!valAsbytes.toString()) {
             console.info("Failed to get state for " + orderId);
             jsonResp.Error = "Failed to get state for " + orderId;
@@ -219,7 +218,7 @@ var Chaincode = class {
             throw new Error(JSON.stringify(jsonResp));
         }
 
-        await stub.deleteState(orderId); //remove the vehicle from chaincode state
+        await stub.deleteState(orderId); //remove the shipment from chaincode state
 
         console.info('-deleteShipment end');
 
@@ -368,6 +367,73 @@ var Chaincode = class {
         
         
         
+     }
+     
+      /**
+     *  Cancel an offer
+     * @param {type} stub
+     * @param {type} args an array with orderId and shipper
+     * @param {type} thisClass
+     * @returns {undefined}
+     */
+     async deleteOffer(sub, args, thisClass){
+          let jsonResp = {};
+        //   0       1       
+        // "orderId", "shipper"
+        if (args.length < 1) {
+            throw new Error("Incorrect number of arguments. Expecting 2: orderId, offerId");
+        }
+
+        let orderId = args[0];
+        let shipper = args[1];
+        
+        console.info("- start deleting offer ", offerId);
+        
+        let shipmentAsBytes = await stub.getState(orderId);
+        if (!shipmentAsBytes.toString()) {
+            console.info("Failed to get shipment: ", orderId);
+            jsonResp.Error = "Failed to get shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+
+        let shipment = {};
+        try {
+            shipment = JSON.parse(shipmentAsBytes.toString('utf8'));
+        } catch (err) {
+            console.info("Failed to decode shipment: ", orderId);
+            jsonResp.Error = "Failed to decode shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+        
+        //check if the shipment is not in the state selected, it can't be canceled if it is
+        if(shipment.currentState === shState.SELECTED ){
+            console.info("offer can't be canceled , state is " + shipment.currentState);
+            jsonResp.Error = "offer can't be canceled , state is " + shipment.currentState;
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+
+        if (shipment.selectedOffer) {
+            console.info("offer can't be canceled up , it has already been selected");
+            jsonResp.Error = "offer can't be canceled up , it has already been selected";
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+        
+        let offers = shipment.offers;
+
+        let newOffers = offers.filter(function(offer) {
+            return offer.offer == offerId;
+        });        
+        
+        if (newOffers.lenght === 0){
+            shipment.currentState = shState.ISSUED;
+        }
+        
+        shipment.offers = newOffers;
+
+        let shipmentJSONBytes = Buffer.from(JSON.stringify(shipment));
+        await stub.putState(orderId, shipmentJSONBytes); //rewrite the shipment
+        
+        console.info("- end offer deleted (success)");
      }
 
     /**
@@ -535,10 +601,10 @@ var Chaincode = class {
     }
     
 
-    // ===== Example: Parameterized rich query =================================================
-    // queryVehiclePartByOwner queries for vehicle part based on a passed in owner.
+    // ==============================================================================================
+    // queryShipmentByShipper queries for shipments based on a passed in shipper.
     // This is an example of a parameterized query where the query logic is baked into the chaincode,
-    // and accepting a single query parameter (owner).
+    // and accepting a single query parameter (shipper).
     // =========================================================================================
     async queryShipmentByShipper(stub, args, thisClass) {
 
@@ -555,10 +621,8 @@ var Chaincode = class {
 
         return queryResults;
     }
-    // ===== Example: Ad hoc rich query ========================================================
-    // queryShipment uses a query string to perform a query for shipmnet.
-    // Query string matching state database syntax is passed in and executed as is.
-    // Supports ad hoc queries that can be defined at runtime by the client.
+    // =========================================================================================
+    //get all shipments
     // =========================================================================================
     async readAllShipments(stub, args, thisClass) {
 
@@ -574,6 +638,63 @@ var Chaincode = class {
 
         return queryResults;
     }
+    
+     // =========================================================================================
+    // get all offers
+    // =========================================================================================
+    async readAllOffers(stub, args, thisClass) {
+
+        // "queryString"
+        if (args.length !== 0) {
+            throw new Error("Incorrect number of arguments. Expecting none");
+        }
+
+        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType') = 'offer'");
+
+        let method = thisClass['getQueryResultForQueryString'];
+        let queryResults = await method(stub, queryString, thisClass);
+
+        return queryResults;
+    }
+    
+      // =========================================================================================
+    // get all offers
+    // =========================================================================================
+    async readAllOffersByOrder(stub, args, thisClass) {
+
+        // "queryString"
+        if (args.length !== 1) {
+            throw new Error("Incorrect number of arguments. Expecting orderId");
+        }
+        let orderId = args[0];
+        let queryString = util.format("SELECT json_extract(valueJson, '$.offers) FROM <STATE> WHERE jons_extract(valueJson, '$.docType') = 'shipment' AND json_extract(valueJson, '$.orderId') = \"%s\"]'", orderId);
+
+        let method = thisClass['getQueryResultForQueryString'];
+        let queryResults = await method(stub, queryString, thisClass);
+
+        return queryResults;
+    }
+    
+    // =========================================================================================
+    // get all one specific offers
+    // =========================================================================================
+    async readOffer(stub, args, thisClass){
+        // "queryString"
+        if (args.length !== 1) {
+            throw new Error("Incorrect number of arguments. Expecting offerId");
+        }
+        let offerId = args[0];
+        let queryString = util.format("SELECT json_extract(valueJson, '$.offers) FROM <STATE> WHERE jons_extract(valueJson, '$.docType') = 'offer' AND json_extract(valueJson, '$.offerId') = \"%s\"]'", offerId);
+
+        let method = thisClass['getQueryResultForQueryString'];
+        let queryResults = await method(stub, queryString, thisClass);
+
+        return queryResults;
+        
+    }
+    
+    
+    
 
     // =========================================================================================
     // getQueryResultForQueryString executes the passed in query string.
