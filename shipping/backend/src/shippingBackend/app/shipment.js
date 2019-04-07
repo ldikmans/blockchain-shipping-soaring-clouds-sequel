@@ -3,6 +3,8 @@ const mapper = require('./shipmentMapper');
 const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
 const version = process.env.VERSION || '1.0.9';
+const CUSTODIAN_WEBSHOP = 'webshop';
+
 let requestBody = {
     'args': [],
     'channel': channel,
@@ -13,6 +15,7 @@ let requestBody = {
 exports.getShipments = async function (req, res, next) {
     try {
         requestBody.method = 'readAllShipments';
+        requestBody.args = [];
         let responseBody = await chaincodeapi.invokeQuery(requestBody);
         let result = responseBody.returnCode;
         if (result === 'Success') {
@@ -28,7 +31,7 @@ exports.getShipments = async function (req, res, next) {
             res.send(shipments);
         } else if (result === 'Failure') {
             console.error(JSON.stringify(responseBody));
-            throw new Error(JSON.parse(responseBody.info.peerErrors[0].errMsg));
+            throw new Error(responseBody.info.peerErrors[0].errMsg);
         } else {
             console.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
@@ -42,6 +45,7 @@ exports.issueShipmentRequest = async function (req, res, next) {
     try {
         requestBody.method = 'issueShipment';
         requestBody.args = mapper.mapRequestBodyToArgs(req.body);
+        requestBody.args.push(CUSTODIAN_WEBSHOP);
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         res.send(responseBody);
     } catch (error) {
@@ -84,8 +88,7 @@ exports.pickupShipment = async function (req, res) {
             throw new Error('shipper is mandatory');
         }
         requestBody.method = 'pickupShipment';
-        requestBody.args.push(orderId);
-        requestBody.args.push(req.body.shipper);
+        requestBody.args = [orderId, req.body.shipper];
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         res.send(responseBody);
     } catch (error) {
@@ -103,8 +106,7 @@ exports.receiveShipment = async function (req, res) {
             throw new Error('shipper is mandatory');
         }
         requestBody.method = 'receiveShipment';
-        requestBody.args.push(orderId);
-        requestBody.args.push(req.body.shipper);
+        requestBody.args = [orderId, req.body.shipper];
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         res.send(responseBody);
     } catch (error) {
@@ -119,8 +121,7 @@ exports.deleteShipment = async function (req, res) {
             throw new Error('unable to read _orderId');
         }
         requestBody.method = 'deleteShipment';
-        requestBody.args.push(orderId);
-        requestBody.args.push(req.body.shipper);
+        requestBody.args = [orderId]; 
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         if (responseBody.returnCode === 'Success') {
             res.status(204).send();
