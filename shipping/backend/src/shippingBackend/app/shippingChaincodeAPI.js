@@ -78,25 +78,25 @@ function checkStatus(txid, channel) {
     });
 };
 
-exports.invokeQuery = function (requestBody) {
-    let options = {
-        url: blockchainURL + restproxy + resource + 'query',
+exports.invokeQuery = async function (requestBody) {
+    return requestPromise({
+        url: blockchainURL + restproxy + resource + '/query',
         method: "POST",
         auth: {
-            user: 'user',
-            pass: 'password'
+            user: username,
+            pass: password
         },
-        json: true, // <--Very important!!!
+        json: true, 
         body: requestBody
-    };
-    return requestPromise(options)
-            .then(function (body) {
-                return JSON.parse(body.result.payload);
-            })
-            .catch(function (err) {
-                console.log(err);
-                return err;
-            });
+    }, function (error, response, body) {
+        if (error) {
+            console.error(error);
+            return error;
+        }
+        else{
+            return body;
+        }
+    });
 };
 
 

@@ -3,18 +3,18 @@
  * @param {type} valueJson the result from the blockchain API, docType is shipment
  * @returns {nm$_shipment.mapShipment.shipment} the shipment object as defined by the API
  */
-function mapShipment(valueJson) {
-
+exports.mapShipment = function (valueJson) {
+    
+    var self = this;
     let offers = valueJson.offers;
     let cleanedOffers = [];
     offers.forEach(function (offer) {
-        delete(offer.docType);
-        cleanedOffers.push(offer);
+        cleanedOffers.push(self.mapOffer(offer));
     });
 
-    let selectedOffer = valueJson.selectedOffer;
-    if (selectedOffer) {
-        delete(selectedOffer.docType);
+   let selectedOffer = valueJson.selectedOffer;
+   if (selectedOffer && !isEmpty(selectedOffer)) {
+        selectedOffer = self.mapOffer(selectedOffer);
     }
     let shipment = {
         'orderId': valueJson.orderId,
@@ -34,7 +34,7 @@ function mapShipment(valueJson) {
 }
 ;
 
-function mapOrder(valueJson) {
+exports.mapOffer = function (valueJson) {
     let offer = {
         'offerId': valueJson.offerId,
         'shipper': valueJson.shipper,
@@ -45,7 +45,7 @@ function mapOrder(valueJson) {
 }
 ;
 
-function mapRequestBodyToArgs(body) {
+exports.mapRequestBodyToArgs = function(body) {
     let args = [];
     if (!body.orderId) {
         throw new Error('orderId is mandatory');
@@ -134,7 +134,7 @@ function mapIntToDate(dateInt) {
         }
         date.setMonth(month);
         date.setDate(day);
-        return date;
+        return date.toISOString().slice(0,10);
     } else{
         return null;
     }
@@ -146,6 +146,15 @@ function pad(n, width, z) {
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 }
 ;
+
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
+};
 
 
 
