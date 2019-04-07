@@ -5,12 +5,15 @@ const bodyParser = require('body-parser');
 const shipment = require('./app/shipment');
 const offer = require('./app/offer');
 const logger = require('./app/logger');
+const producer = require('./app/producer');
 
 const port = process.env.PORT || 8080;
 const VERSION = '1.0.0';
 
 const app = express();
 var upTime;
+
+producer.initKafkaAvro();
 
 
 app.use(bodyParser.urlencoded({extended: true}));

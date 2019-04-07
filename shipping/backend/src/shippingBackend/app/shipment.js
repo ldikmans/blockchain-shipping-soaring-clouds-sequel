@@ -4,6 +4,8 @@ const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
 const version = process.env.VERSION || '1.1.1';
 const CUSTODIAN_WEBSHOP = 'webshop';
+const publisher = require('./producer');
+const publish = process.env.PUBLISH || false;
 
 let requestBody = {
     'args': [],
@@ -124,6 +126,13 @@ exports.pickupShipment = async function (req, res) {
         requestBody.method = 'pickupShipment';
         requestBody.args = [orderId, req.body.shipper];
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
+        if (publish) {
+            let event = req.body;
+            event.orderId = req.body;
+            event.date = new Date();
+            logger.debug("publishing pickup event: " + JSON.stringify(event));
+            publisher.publishShipmentPickedUp(event);
+        }
         res.send(responseBody);
     } catch (error) {
         console.error(error);
@@ -142,6 +151,13 @@ exports.receiveShipment = async function (req, res) {
         requestBody.method = 'receiveShipment';
         requestBody.args = [orderId, req.body.shipper];
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
+        if (publish) {
+            let event = req.body;
+            event.orderId = req.body;
+            event.date = new Date();
+            logger.debug("publishing recive event: " + JSON.stringify(event));
+            publisher.publishShipmentReceived(event);
+        }
         res.send(responseBody);
     } catch (error) {
         console.error(error);

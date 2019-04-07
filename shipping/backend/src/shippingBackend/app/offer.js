@@ -1,9 +1,11 @@
 const chaincodeapi = require('./shippingChaincodeAPI');
 const aguid = require('aguid');
 const mapper = require('./shipmentMapper');
+const publisher = require('./producer');
 const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
 const version = process.env.VERSION || '1.1.1';
+const publish = process.env.PUBLISH || true;
 
 
 let requestBody = {
@@ -132,6 +134,10 @@ exports.offerDelivery = async function (req, res, next) {
         if (result === 'Success') {
             let offer = req.body;
             offer.offerId = offerId;
+            if(publish){
+                logger.debug("publishing offer: " + JSON.stringify(offer));
+                publisher.publishShipmentOffered(offer);
+            }
             res.send(offer);
         }else if (result === 'Failure') {
             console.error(responseBody.info.peerErrors[0].errMsg);
@@ -180,16 +186,13 @@ exports.selectOffer = async function (req, res, next) {
             throw new Error('unable to read _offerId');
         }
         ;
-        requestBody.args.push(req.params._offerId);
+        requestBody.args = [req.params._offerId];
         if (!req.body.orderId) {
             throw new Error('orderId is mandatory');
         }
         ;
-        requestBody.args.push(req.body.orderId);
-        if (!req.body.shipper) {
-            throw new Error('shipper is mandatory');
-        }
-        ;
+        requestBody.args.push(!req.body.orderId);
+        
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         res.send(responseBody);
     } catch (error) {
