@@ -43,6 +43,17 @@ router.get('/health', function (req, res) {
     });
 });
 
+app.route('/shippermarketplace/shipments/:_orderId/history')
+
+        .get(function(req, res, next){
+            logger.debug('getting the history of the shipment');
+            try{
+                shipment.getHistory(req, res, next);
+            }catch(error){
+                next(error);
+            }
+});
+
 app.route('/shippermarketplace/shipments/:_orderId')
 
         .get(function (req, res, next) {
@@ -82,6 +93,7 @@ app.route('/shippermarketplace/shipments/:_orderId')
             }
         });
 
+
 app.route('/shippermarketplace/shipments')
 
         .get(function (req, res, next) {
@@ -116,6 +128,13 @@ app.route('/shippermarketplace/offers/:_offerId')
             logger.debug('selecting an offer');
             try{
                 offer.selectOffer(req, res, next);
+            }catch(error){
+                next(error);
+            }
+        }).delete(function(req, res, next){
+            logger.debug("canceling the offer");
+            try{
+                offer.deleteOffer(req, res, next);
             }catch(error){
                 next(error);
             }

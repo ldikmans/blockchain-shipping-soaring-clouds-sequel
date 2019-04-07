@@ -34,6 +34,28 @@ exports.mapShipment = function (valueJson) {
 }
 ;
 
+exports.mapShipmentHistory = function(valueJson){
+    var self = this;
+    let offers = valueJson.Value.offers;
+    let cleanedOffers = [];
+    offers.forEach(function (offer) {
+        cleanedOffers.push(self.mapOffer(offer, valueJson.Value.orderId));
+    });
+
+   let selectedOffer = valueJson.Value.selectedOffer;
+   if (selectedOffer && !isEmpty(selectedOffer)) {
+        selectedOffer = self.mapOffer(selectedOffer, valueJson.Value.orderId);
+    }
+    let shipmentHistory = {
+        'transactionId': valueJson.TxId,
+        'timestamp': new Date(valueJson.Timestamp),
+        'isDelete': valueJson.IsDelete,
+        'value': self.mapShipment(valueJson.Value)
+    };
+    return shipmentHistory;
+    
+};
+
 //todo add tracking info field
 exports.mapOffer = function (valueJson, orderId) {
     let offer = {

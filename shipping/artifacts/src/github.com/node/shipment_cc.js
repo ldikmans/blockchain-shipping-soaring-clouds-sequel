@@ -23,6 +23,7 @@ var Chaincode = class {
      'shipper': string //the id of the shipper
      'deliveryDate': string //proposed deliveryDate
      'price': string //proposed price'
+     'trackingInfo': boolean //support tracking
      }
      
      //address struct
@@ -237,9 +238,9 @@ var Chaincode = class {
 
         offer.docType = 'offer';
 
-        // "offerId", "orderId", "shipper", "price", "deliveryDate"
-        if (args.length < 5) {
-            throw new Error("Incorrect number of arguments. Expecting 5: offerId, orderId, shipper, price, deliveryDate");
+        // "offerId", "orderId", "shipper", "price", "deliveryDate", "trackingInfo"
+        if (args.length < 6) {
+            throw new Error("Incorrect number of arguments. Expecting 5: offerId, orderId, shipper, price, deliveryDate, trackingInfo");
         }
 
         let offerId = args[0];
@@ -253,8 +254,10 @@ var Chaincode = class {
         if (typeof deliveryDate !== 'number') {
             throw new Error('4th argument must be a numeric string');
         }
+        let trackingInfo = args[5];
+        
 
-        console.info("- start offer delivery ", offerId, orderId, shipper, price, deliveryDate);
+        console.info("- start offer delivery ", offerId, orderId, shipper, price, deliveryDate, trackingInfo);
 
         let shipmentAsBytes = await stub.getState(orderId);
         if (!shipmentAsBytes.toString()) {
@@ -283,6 +286,7 @@ var Chaincode = class {
         offer.shipper = shipper; //name of the shipper
         offer.deliveryDate = deliveryDate; //set the proposed deliver date
         offer.price = price; //set the proposed price
+        offer.trackingInfo = trackingInfo; //support tracking of the package
 
         if (!shipment.offers) {
             shipment.offers = [];
@@ -375,10 +379,10 @@ var Chaincode = class {
      * @param {type} thisClass
      * @returns {undefined}
      */
-    async deleteOffer(sub, args, thisClass) {
+    async deleteOffer(stub, args, thisClass) {
         let jsonResp = {};
         //   0       1       
-        // "orderId", "shipper"
+        // "orderId", "offerId"
         if (args.length < 1) {
             throw new Error("Incorrect number of arguments. Expecting 2: orderId, offerId");
         }

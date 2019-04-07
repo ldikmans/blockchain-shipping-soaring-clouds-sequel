@@ -1,8 +1,10 @@
 const chaincodeapi = require('./shippingChaincodeAPI');
+const aguid = require('aguid');
 const mapper = require('./shipmentMapper');
 const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
 const version = process.env.VERSION || '1.1.1';
+
 
 let requestBody = {
     'args': [],
@@ -16,11 +18,11 @@ exports.getOffers = async function (req, res, next) {
     try {
         let orderId = req.query.orderId;
         if (orderId) {
-            //todo replace by correct query
+            //todo replace by correct query once the offers are stored separately in the chaincode, not as part of the shipment
             requestBody.method = 'readShipment';
             requestBody.args = [orderId];
         } else {
-            //todo replace by correct query
+            //todo replace by correct query once the offers are stored separately in the chaincode, not as part of the shipment
             requestBody.method = 'readAllShipments';
             requestBody.args = [];
         }
@@ -100,11 +102,9 @@ exports.getOfferDetails = async function (req, res, next) {
 exports.offerDelivery = async function (req, res, next) {
     try {
         requestBody.method = 'offerDelivery';
-        if (!req.params._offerId) {
-            throw new Error('unable to read _offerId');
-        }
-        ;
-        requestBody.args.push(req.params._offerId);
+       
+        let offerId = aguid();
+        requestBody.args = [offerId];
         if (!req.body.orderId) {
             throw new Error('orderId is mandatory');
         }
@@ -115,7 +115,7 @@ exports.offerDelivery = async function (req, res, next) {
         }
         ;
         requestBody.args.push(req.body.shipper);
-        if (req.body.price) {
+        if (!req.body.price) {
             throw new Error('price is mandatory');
         }
         ;
@@ -124,14 +124,29 @@ exports.offerDelivery = async function (req, res, next) {
             throw new Error('deliveryDate is mandatory');
         }
         requestBody.args.push(req.body.deliveryDate);
+        if( req.body.trackingInfo){
+            requestBody.args.push(req.body.trackingInfo);
+        }
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
-        res.send(responseBody);
+        let result = responseBody.returnCode;
+        if (result === 'Success') {
+            let offer = req.body;
+            offer.offerId = offerId;
+            res.send(offer);
+        }else if (result === 'Failure') {
+            console.error(responseBody.info.peerErrors[0].errMsg);
+            throw new Error('unable to find offer with orderId ' + offerId);
+        } else {
+            console.error(JSON.stringify(responseBody));
+            throw new Error('unknown response');
+        }
     } catch (error) {
         console.error(error);
         next(error);
     }
 };
 
+//todo fix this once offers is stored as its own state.
 exports.deleteOffer = async function (req, res, next) {
 
     try {
@@ -140,7 +155,7 @@ exports.deleteOffer = async function (req, res, next) {
             throw new Error('unable to read _offerId');
         }
         ;
-        requestBody.args.push(req.params._offerId);
+        requestBody.args = [req.params._offerId];
         if (!req.body.orderId) {
             throw new Error('orderId is mandatory');
         }
