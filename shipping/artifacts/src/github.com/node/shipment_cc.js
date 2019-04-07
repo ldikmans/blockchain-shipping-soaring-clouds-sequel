@@ -353,7 +353,7 @@ var Chaincode = class {
         }
 
         let selectedOffer = shipment.offers.find(offer => offer.offerId === offerId);
-        
+
         shipment.currentState = shState.SELECTED;
         shipment.selectedOffer = selectedOffer;
         shipment.deliveryDate = selectedOffer.deliveryDate;
@@ -574,12 +574,12 @@ var Chaincode = class {
         return queryResults;
     }
     ;
-            // ===== Example: Parameterized rich query =================================================
-            // getShipmentByProduct queries for shipments based on a passed in product.
-            // This is an example of a parameterized query where the query logic is baked into the chaincode,
-            // and accepting a single query parameter (product).
-            // =========================================================================================
-            async queryShipmentByCustomer(stub, args, thisClass) {
+    // ===== Example: Parameterized rich query =================================================
+    // getShipmentByProduct queries for shipments based on a passed in product.
+    // This is an example of a parameterized query where the query logic is baked into the chaincode,
+    // and accepting a single query parameter (product).
+    // =========================================================================================
+    async queryShipmentByCustomer(stub, args, thisClass) {
 
         if (args.length < 1) {
             throw new Error("Incorrect number of arguments. Expecting 1");
@@ -643,7 +643,7 @@ var Chaincode = class {
             throw new Error("Incorrect number of arguments. Expecting none");
         }
 
-        let queryString = util.format("SELECT valueJson FROM <STATE> WHERE json_extract(valueJson, '$.docType') = 'offer'");
+        let queryString = util.format("SELECT json_extract(valueJson, '$.offers) FROM <STATE> WHERE json_extract(valueJson, '$.docType') = 'shipment'");
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
@@ -685,6 +685,26 @@ var Chaincode = class {
 
         return queryResults;
 
+    }
+
+    // ===== Ad hoc rich query ========================================================
+    // queryVehiclePart uses a query string to perform a query for shipments.
+    // Query string matching state database syntax is passed in and executed as is.
+    // Supports ad hoc queries that can be defined at runtime by the client.
+    // =========================================================================================
+    async queryShipment(stub, args, thisClass) {
+
+        // "queryString"
+        if (args.length < 1) {
+            throw new Error("Incorrect number of arguments. Expecting 1");
+        }
+
+        let queryString = args[0];
+
+        let method = thisClass['getQueryResultForQueryString'];
+        let queryResults = await method(stub, queryString, thisClass);
+
+        return queryResults;
     }
 
     // =========================================================================================
