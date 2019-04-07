@@ -2,7 +2,7 @@ const chaincodeapi = require('./shippingChaincodeAPI');
 const mapper = require('./shipmentMapper');
 const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
-const version = process.env.VERSION || '1.0.9';
+const version = process.env.VERSION || '1.1.1';
 const CUSTODIAN_WEBSHOP = 'webshop';
 
 let requestBody = {

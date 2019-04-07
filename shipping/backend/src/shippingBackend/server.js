@@ -102,7 +102,8 @@ app.route('/shippermarketplace/shipments')
         });
 
 
-app.route('shippermarketplace/offers/:_offerId')
+app.route('/shippermarketplace/offers/:_offerId')
+
         .get(function (req, res, next) {
             logger.debug('fetching the offer');
             try{

@@ -9,12 +9,12 @@ exports.mapShipment = function (valueJson) {
     let offers = valueJson.offers;
     let cleanedOffers = [];
     offers.forEach(function (offer) {
-        cleanedOffers.push(self.mapOffer(offer));
+        cleanedOffers.push(self.mapOffer(offer, valueJson.orderId));
     });
 
    let selectedOffer = valueJson.selectedOffer;
    if (selectedOffer && !isEmpty(selectedOffer)) {
-        selectedOffer = self.mapOffer(selectedOffer);
+        selectedOffer = self.mapOffer(selectedOffer, valueJson.orderId);
     }
     let shipment = {
         'orderId': valueJson.orderId,
@@ -34,12 +34,15 @@ exports.mapShipment = function (valueJson) {
 }
 ;
 
-exports.mapOffer = function (valueJson) {
+//todo add tracking info field
+exports.mapOffer = function (valueJson, orderId) {
     let offer = {
         'offerId': valueJson.offerId,
         'shipper': valueJson.shipper,
+        'deliveryDate': mapIntToDate(valueJson.deliveryDate),
         'price': valueJson.price,
-        'deliveryDate': mapIntToDate(valueJson.deliveryDate)
+        'orderId': orderId,
+        'trackingInfo': false
     };
     return offer;
 }

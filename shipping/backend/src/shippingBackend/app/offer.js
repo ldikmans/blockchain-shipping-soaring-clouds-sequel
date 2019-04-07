@@ -2,7 +2,7 @@ const chaincodeapi = require('./shippingChaincodeAPI');
 const mapper = require('./shipmentMapper');
 const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
-const version = process.env.VERSION || '1.0.9';
+const version = process.env.VERSION || '1.1.1';
 
 let requestBody = {
     'args': [],
@@ -15,23 +15,36 @@ let requestBody = {
 exports.getOffers = async function (req, res, next) {
     try {
         let orderId = req.query.orderId;
-        if (req.orderId) {
-            requestBody.method = 'readAllOffersByOrder';
-            requestBody.args.push(orderId);
+        if (orderId) {
+            //todo replace by correct query
+            requestBody.method = 'readShipment';
+            requestBody.args = [orderId];
         } else {
-            requestBody.method = 'readAllOffers';
+            //todo replace by correct query
+            requestBody.method = 'readAllShipments';
+            requestBody.args = [];
         }
         let responseBody = await chaincodeapi.invokeQuery(requestBody);
         let result = responseBody.returnCode;
         if (result === 'Success') {
             let jsonResponseBody = JSON.parse(responseBody.result.payload);
             let offers = [];
+            if (orderId) {
+                let shipment = mapper.mapShipment(JSON.parse(responseBody.result.payload));
+                if (shipment.offers.length > 0) {
+                    offers.push(...shipment.offers);
+                }
+
+            }
             if (jsonResponseBody && jsonResponseBody.length > 0) {
                 for (i = 0; i < jsonResponseBody.length; i++) {
-                    let shipment = mapper.mapOffer(JSON.parse(jsonResponseBody[i].valueJson));
-                    offers.push(shipment);
+                    let shipmentFromArray = mapper.mapShipment(JSON.parse(jsonResponseBody[i].valueJson));
+                    if (shipmentFromArray.offers.length > 0) {
+                        offers.push(...shipmentFromArray.offers);
+                    }
                 }
             }
+
 
             res.send(offers);
         } else if (result === 'Failure') {
@@ -50,19 +63,30 @@ exports.getOffers = async function (req, res, next) {
 exports.getOfferDetails = async function (req, res, next) {
     try {
         let offerId = req.params._offerId;
-        if (!orderId) {
+        if (!offerId) {
             throw new Error('unable to read _offerId');
         }
-        requestBody.method = 'readOffer';
-        requestBody.args = [offerId];
+        //todo fix query for offers
+        requestBody.method = 'readAllShipments';
+        requestBody.args = [];
         let responseBody = await chaincodeapi.invokeQuery(requestBody);
         let result = responseBody.returnCode;
         if (result === 'Success') {
-            let offer = mapper.mapOffer(JSON.parse(responseBody.result.payload));
+            let jsonResponseBody = JSON.parse(responseBody.result.payload);
+            let offers = [];
+             if (jsonResponseBody && jsonResponseBody.length > 0) {
+                for (i = 0; i < jsonResponseBody.length; i++) {
+                    let shipmentFromArray = mapper.mapShipment(JSON.parse(jsonResponseBody[i].valueJson));
+                    if (shipmentFromArray.offers.length > 0) {
+                        offers.push(...shipmentFromArray.offers);
+                    }
+                }
+            }
+            let offer = offers.find(offer => offer.offerId === offerId);
             res.send(offer);
         } else if (result === 'Failure') {
             console.error(responseBody.info.peerErrors[0].errMsg);
-            throw new Error('unable to find shipment with orderId ' + orderId);
+            throw new Error('unable to find offer with orderId ' + offerId);
         } else {
             console.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
