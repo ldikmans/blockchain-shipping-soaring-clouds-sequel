@@ -192,10 +192,14 @@ exports.selectOffer = async function (req, res, next) {
             throw new Error('orderId is mandatory');
         }
         ;
-        requestBody.args.push(!req.body.orderId);
+        requestBody.args.push(req.body.orderId);
         
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
-        res.send(responseBody);
+        if (responseBody.returnCode === 'Success') {
+            res.status(200).send(responseBody);
+        } else {
+            res.status(500).send(responseBody);
+        }
     } catch (error) {
         console.error(error);
         next(error);

@@ -173,6 +173,10 @@ exports.publishShipmentReceived = function (shipment) {
 };
 
 function mapOfferToAvroOffer(body) {
+   
+   if(!body.trackingInfo){
+       let trackingInfo = false;
+   }
 
     var offer = {};
 
@@ -181,7 +185,7 @@ function mapOfferToAvroOffer(body) {
     offer.deliveryDate = Math.round((new Date(body.deliveryDate)).getTime() / 1000);
     offer.price = body.price;
     offer.orderId = body.orderId;
-    offer.trackingInfo = {"boolean": body.trackingInfo};
+    offer.trackingInfo = {"boolean": false};
 
     return offer;
 }
