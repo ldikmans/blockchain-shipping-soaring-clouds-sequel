@@ -180,7 +180,7 @@ app.use('/shippermarketplace', router);
 
 app.use(function (err, req, res, next) {
     logger.debug('request: ' + req.baseUrl);
-    console.error(err.message); // 
+    logger.error(err); // 
     if (!err.statusCode)
         err.statusCode = 500;
     res.status(err.statusCode).send(err.message);

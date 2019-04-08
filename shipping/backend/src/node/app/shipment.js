@@ -115,7 +115,7 @@ exports.getHistory = async function (req, res, next) {
     }
 };
 
-exports.pickupShipment = async function (req, res) {
+exports.pickupShipment = async function (req, res, next) {
     try {
         let orderId = req.params._orderId;
         if (!orderId) {
@@ -132,7 +132,7 @@ exports.pickupShipment = async function (req, res) {
             logger.debug('publish is ' + publish);
             if (publish) {
                 let eventToPublish = req.body;
-                eventToPublish.orderId = req.body;
+                eventToPublish.orderId = orderId;
                 eventToPublish.date = new Date();
                 logger.debug("publishing pickup event: " + JSON.stringify(eventToPublish));
                 publisher.publishShipmentPickedUp(eventToPublish);
@@ -166,7 +166,7 @@ exports.receiveShipment = async function (req, res, next) {
             logger.debug('publish is: ' + publish);
             if (publish) {
                 let eventToPublish = req.body;
-                eventToPublish.orderId = req.body;
+                eventToPublish.orderId = orderId;
                 eventToPublish.date = new Date();
                 logger.debug("publishing receive event: " + eventToPublish);
                 publisher.publishShipmentReceived(eventToPublish);
