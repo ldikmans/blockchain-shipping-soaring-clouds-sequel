@@ -1,0 +1,597 @@
+{
+	"info": {
+		"_postman_id": "5929453b-56bd-4a7d-ab82-3b077b0ad73b",
+		"name": "ShippingBackend",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "getShipmentsByOrderId",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/shipments/{{orderId}}",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"shipments",
+						"{{orderId}}"
+					]
+				},
+				"description": "get all shipments"
+			},
+			"response": []
+		},
+		{
+			"name": "getShipments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/shipments",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"shipments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "issue Shipment Request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "8b2cbd6e-9676-4dec-9b5f-d70f277e6133",
+						"exec": [
+							"let currentOrderId = parseInt(pm.environment.get(\"orderId\"));",
+							"pm.environment.set(\"orderId\", currentOrderId + 1);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"orderId\": {{orderId}},\r\n  \"product\": \"paella test\",\r\n  \"customer\": \"john.doe@gmail.com\",\r\n  \"shippingAddress\": {\r\n    \"streetName\": \"2nd Street\",\r\n    \"streetNumber\": \"21\",\r\n    \"city\": \"New York\",\r\n    \"postcode\": \"50858\",\r\n    \"country\": \"US\"\r\n  },\r\n  \"orderDate\": \"2019-04-07\"\r\n}"
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/shipments",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"shipments"
+					]
+				},
+				"description": "issue the shipment request"
+			},
+			"response": []
+		},
+		{
+			"name": "pickUpShipment",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"shipper\": \"EdFex\",\n\t\"event\": \"PICKUP\"\n}"
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/shipments/{{orderId}}",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"shipments",
+						"{{orderId}}"
+					]
+				},
+				"description": "picking up the shipment from the webshop"
+			},
+			"response": []
+		},
+		{
+			"name": "ReceiveShipment",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"shipper\": \"USP\",\n\t\"event\": \"RECEIVE\"\n}"
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/shipments/{{orderId}}",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"shipments",
+						"{{orderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "deleteShipment",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/shipments/13",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"shipments",
+						"13"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getOffers for order",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/offers?orderId={{orderId}}",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"offers"
+					],
+					"query": [
+						{
+							"key": "orderId",
+							"value": "{{orderId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getAllOffers",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/offers",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"offers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getOfferDetails",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0117bb33-97b8-4597-94a5-81f18d422909",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/offers/{{oferId}}",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"offers",
+						"{{oferId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getHistoryForOrderRecord",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/shipments/{{orderId}}/history",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"shipments",
+						"{{orderId}}",
+						"history"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "offerDelivery",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "54674b0e-56a8-49ee-95c9-a49a237aca17",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "916b3f1a-fd3e-4d99-b81a-2bd23084f298",
+						"exec": [
+							"var responseBody = pm.response.json();",
+							"pm.environment.set(\"offerId\", responseBody.offerId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"orderId\": {{orderId}},\n\t\"shipper\": \"EdFex\",\n\t\"price\": 3.50,\n\t\"deliveryDate\": \"2019-07-09\", \n\t\"trackingInfo\": false\n}"
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/offers",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"offers"
+					]
+				},
+				"description": "offer a delivery"
+			},
+			"response": []
+		},
+		{
+			"name": "deleteOffer",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"orderId\": {{orderId}}\n}"
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/offers/{{offerId}}",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"offers",
+						"{{offerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "selectOffer",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Welcome1welcome1",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "systemaccount",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"orderId\": {{orderId}},\n\t\"shipper\": \"EdFex\"\n}"
+				},
+				"url": {
+					"raw": "{{server}}:{{port}}/shippermarketplace/offers/{{offerId}}",
+					"host": [
+						"{{server}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"shippermarketplace",
+						"offers",
+						"{{offerId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
