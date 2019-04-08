@@ -168,7 +168,7 @@ exports.receiveShipment = async function (req, res, next) {
                 let eventToPublish = req.body;
                 eventToPublish.orderId = orderId;
                 eventToPublish.date = new Date();
-                logger.debug("publishing receive event: " + eventToPublish);
+                logger.debug("publishing receive event: " + JSON.stringify(eventToPublish));
                 publisher.publishShipmentReceived(eventToPublish);
             }
             res.send(responseBody);
