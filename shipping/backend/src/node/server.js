@@ -72,18 +72,20 @@ app.route('/shippermarketplace/shipments/:_orderId')
             let event = req.body.event;
             if (event === 'PICKUP') {
                 try{
+                    logger.debug('pickup');
                     shipment.pickupShipment(req, res, next);
                 } catch(error){
                     next (error);
                 }
             } else if (event === 'RECEIVE'){
                 try{
+                    logger.debug('receive');
                     shipment.receiveShipment(req, res, next);
                 } catch(error){
                     next(error);
                 }
             }else{
-                logger.debug('event should be either PICUP or RECEIVE but is ' + event);
+                logger.error('event should be either PICKUP or RECEIVE but is ' + event);
                 next(new Error('event should be either PICKUP or RECEIVE'));
             }
         })

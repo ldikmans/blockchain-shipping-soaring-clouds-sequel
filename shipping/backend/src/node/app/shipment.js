@@ -131,12 +131,12 @@ exports.pickupShipment = async function (req, res) {
         if (result === 'Success') {
             logger.debug('publish is ' + publish);
             if (publish) {
-                let event = req.body;
-                event.orderId = req.body;
-                event.date = new Date();
-                logger.debug("publishing pickup event: " + JSON.stringify(event));
-                publisher.publishShipmentPickedUp(event);
-            }           
+                let eventToPublish = req.body;
+                eventToPublish.orderId = req.body;
+                eventToPublish.date = new Date();
+                logger.debug("publishing pickup event: " + JSON.stringify(eventToPublish));
+                publisher.publishShipmentPickedUp(eventToPublish);
+            }
             res.send(responseBody);
         } else {
             logger.error(responseBody);
@@ -161,16 +161,18 @@ exports.receiveShipment = async function (req, res, next) {
         requestBody.args = [orderId, req.body.shipper];
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         let result = responseBody.returnCode;
+        logger.debug('result is: ' + result);
         if (result === 'Success') {
+            logger.debug('publish is: ' + publish);
             if (publish) {
-                let event = req.body;
-                event.orderId = req.body;
-                event.date = new Date();
-                logger.debug("publishing receive event: " + JSON.stringify(event));
-                publisher.publishShipmentReceived(event);
-            } 
-                res.send(responseBody);
-            
+                let eventToPublish = req.body;
+                eventToPublish.orderId = req.body;
+                eventToPublish.date = new Date();
+                logger.debug("publishing receive event: " + eventToPublish);
+                publisher.publishShipmentReceived(eventToPublish);
+            }
+            res.send(responseBody);
+
         } else {
             logger.error(responseBody);
             res.status(500).send(responseBody);
