@@ -1,4 +1,5 @@
 const chaincodeapi = require('./shippingChaincodeAPI');
+const logger = require('./app/logger');
 const aguid = require('aguid');
 const mapper = require('./shipmentMapper');
 const publisher = require('./producer');

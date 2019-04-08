@@ -1,4 +1,5 @@
 const chaincodeapi = require('./shippingChaincodeAPI');
+const logger = require('./app/logger');
 const mapper = require('./shipmentMapper');
 const channel = process.env.CHANNEL || 'testshipping';
 const chaincode = process.env.CHAINCODE || 'shipment';
