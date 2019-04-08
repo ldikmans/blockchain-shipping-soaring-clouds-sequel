@@ -147,7 +147,7 @@ exports.pickupShipment = async function (req, res) {
         next(error);
     }
 };
-exports.receiveShipment = async function (req, res) {
+exports.receiveShipment = async function (req, res, next) {
     try {
         let orderId = req.params._orderId;
         if (!orderId) {
