@@ -53,14 +53,14 @@ exports.getOffers = async function (req, res, next) {
 
             res.send(offers);
         } else if (result === 'Failure') {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error(JSON.parse(responseBody.info.peerErrors[0].errMsg));
         } else {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return next(error);
     }
 };
@@ -90,14 +90,14 @@ exports.getOfferDetails = async function (req, res, next) {
             let offer = offers.find(offer => offer.offerId === offerId);
             res.send(offer);
         } else if (result === 'Failure') {
-            console.error(responseBody.info.peerErrors[0].errMsg);
+            logger.error(responseBody.info.peerErrors[0].errMsg);
             throw new Error('unable to find offer with orderId ' + offerId);
         } else {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -141,14 +141,14 @@ exports.offerDelivery = async function (req, res, next) {
             }
             res.send(offer);
         }else if (result === 'Failure') {
-            console.error(responseBody.info.peerErrors[0].errMsg);
+            logger.error(responseBody.info.peerErrors[0].errMsg);
             throw new Error('unable to find offer with orderId ' + offerId);
         } else {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -175,7 +175,7 @@ exports.deleteOffer = async function (req, res, next) {
             res.status(500).send(responseBody);
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -201,7 +201,7 @@ exports.selectOffer = async function (req, res, next) {
             res.status(500).send(responseBody);
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };

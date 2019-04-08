@@ -6,7 +6,7 @@ const chaincode = process.env.CHAINCODE || 'shipment';
 const version = process.env.VERSION || '1.1.1';
 const CUSTODIAN_WEBSHOP = 'webshop';
 const publisher = require('./producer');
-const publish = process.env.PUBLISH || false;
+const publish = process.env.PUBLISH || true;
 
 let requestBody = {
     'args': [],
@@ -33,14 +33,14 @@ exports.getShipments = async function (req, res, next) {
 
             res.send(shipments);
         } else if (result === 'Failure') {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error(responseBody.info.peerErrors[0].errMsg);
         } else {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         return next(error);
     }
 };
@@ -52,7 +52,7 @@ exports.issueShipmentRequest = async function (req, res, next) {
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         res.send(responseBody);
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -70,14 +70,14 @@ exports.getDetails = async function (req, res, next) {
             let shipment = mapper.mapShipment(JSON.parse(responseBody.result.payload));
             res.send(shipment);
         } else if (result === 'Failure') {
-            console.error(responseBody.info.peerErrors[0].errMsg);
+            logger.error(responseBody.info.peerErrors[0].errMsg);
             throw new Error('unable to find shipment with orderId ' + orderId);
         } else {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -103,14 +103,14 @@ exports.getHistory = async function (req, res, next) {
             }
             res.send(shipmentsHistory);
         } else if (result === 'Failure') {
-            console.error(responseBody.info.peerErrors[0].errMsg);
+            logger.error(responseBody.info.peerErrors[0].errMsg);
             throw new Error('unable to find shipment with orderId ' + orderId);
         } else {
-            console.error(JSON.stringify(responseBody));
+            logger.error(JSON.stringify(responseBody));
             throw new Error('unknown response');
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -129,21 +129,22 @@ exports.pickupShipment = async function (req, res) {
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
         let result = responseBody.returnCode;
         if (result === 'Success') {
+            logger.debug('publish is ' + publish);
             if (publish) {
                 let event = req.body;
                 event.orderId = req.body;
                 event.date = new Date();
                 logger.debug("publishing pickup event: " + JSON.stringify(event));
                 publisher.publishShipmentPickedUp(event);
-            }
+            }           
             res.send(responseBody);
         } else {
-            console.error(responseBody);
+            logger.error(responseBody);
             res.status(500).send(responseBody);
         }
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -165,16 +166,17 @@ exports.receiveShipment = async function (req, res, next) {
                 let event = req.body;
                 event.orderId = req.body;
                 event.date = new Date();
-                logger.debug("publishing recive event: " + JSON.stringify(event));
+                logger.debug("publishing receive event: " + JSON.stringify(event));
                 publisher.publishShipmentReceived(event);
-            }
-            res.send(responseBody);
+            } 
+                res.send(responseBody);
+            
         } else {
-            console.error(responseBody);
+            logger.error(responseBody);
             res.status(500).send(responseBody);
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
@@ -193,7 +195,7 @@ exports.deleteShipment = async function (req, res) {
             res.status(500).send(responseBody);
         }
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         next(error);
     }
 };
