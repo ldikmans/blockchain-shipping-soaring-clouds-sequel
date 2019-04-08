@@ -2,6 +2,8 @@
 /shipping/artifacts/src/github.com/node/nbproject/private/
 shipping/artifacts/src/github.com/node/nbproject/project.xml
 shipping/artifacts/src/github.com/node/nbproject/project.properties
-/shipping/backend/src/shippingBackend/nbproject/private/
+/shipping/backend/src/node/nbproject/private/
 *.zip
 shipping/artifacts/src/github.com/node/node_modules/
+shipping/backend/src/node/nbproject/
+shipping/backend/src/node/node_modules/
