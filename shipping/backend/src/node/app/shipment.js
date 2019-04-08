@@ -127,14 +127,21 @@ exports.pickupShipment = async function (req, res) {
         requestBody.method = 'pickupShipment';
         requestBody.args = [orderId, req.body.shipper];
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
-        if (publish) {
-            let event = req.body;
-            event.orderId = req.body;
-            event.date = new Date();
-            logger.debug("publishing pickup event: " + JSON.stringify(event));
-            publisher.publishShipmentPickedUp(event);
+        let result = responseBody.returnCode;
+        if (result === 'Success') {
+            if (publish) {
+                let event = req.body;
+                event.orderId = req.body;
+                event.date = new Date();
+                logger.debug("publishing pickup event: " + JSON.stringify(event));
+                publisher.publishShipmentPickedUp(event);
+            }
+            res.send(responseBody);
+        } else {
+            console.error(responseBody);
+            res.status(500).send(responseBody);
         }
-        res.send(responseBody);
+
     } catch (error) {
         console.error(error);
         next(error);
@@ -152,14 +159,20 @@ exports.receiveShipment = async function (req, res) {
         requestBody.method = 'receiveShipment';
         requestBody.args = [orderId, req.body.shipper];
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
-        if (publish) {
-            let event = req.body;
-            event.orderId = req.body;
-            event.date = new Date();
-            logger.debug("publishing recive event: " + JSON.stringify(event));
-            publisher.publishShipmentReceived(event);
+        let result = responseBody.returnCode;
+        if (result === 'Success') {
+            if (publish) {
+                let event = req.body;
+                event.orderId = req.body;
+                event.date = new Date();
+                logger.debug("publishing recive event: " + JSON.stringify(event));
+                publisher.publishShipmentReceived(event);
+            }
+            res.send(responseBody);
+        } else {
+            console.error(responseBody);
+            res.status(500).send(responseBody);
         }
-        res.send(responseBody);
     } catch (error) {
         console.error(error);
         next(error);
