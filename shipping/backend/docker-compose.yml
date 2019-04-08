@@ -5,17 +5,17 @@ services:
       image: lonneke/shipping-backend-ms:1.0.0
       build: ./src/node
       environment:
-        -LOG_LEVEL: 'debug'
-        -PORT: 8080
-        -CHANNEL: 'testshipping'
-        -CHAINCODE: 'shipment'
-        -VERSION: '1.1.1'
-        -'KAFKA_BROKER: 130.61.35.61:9092'
-        -'KAFKA_REGISTRY: http://130.61.35.61:8081'
-        -PUBLISH: 'true'
-        -KAFKA_SHIPMENT_OFFER_TOPIC: 'soaring-shipmentoffer'
-        -KAFKA_SHIPMENT_PICKEDUP_TOPIC: 'soaring-shipmentpickedup'
-        -KAFKA_SHIPMENT_RECEIVED_TOPIC: 'soaring-shipmentreceived'
-      ports:
-        - "8080:8070"
+        LOG_LEVEL: 'debug'
+        PORT: 8070
+        CHANNEL: 'testshipping'
+        CHAINCODE: 'shipment'
+        VERSION: '1.1.1'
+        KAFKA_BROKER: 130.61.35.61:9092
+        KAFKA_REGISTRY: http://130.61.35.61:8081
+        PUBLISH: 'true'
+        KAFKA_SHIPMENT_OFFER_TOPIC: 'soaring-shipmentoffer'
+        KAFKA_SHIPMENT_PICKEDUP_TOPIC: 'soaring-shipmentpickedup'
+        KAFKA_SHIPMENT_RECEIVED_TOPIC: 'soaring-shipmentreceived'
+      ports: 
+       - "8070:8070"
       command: npm start
