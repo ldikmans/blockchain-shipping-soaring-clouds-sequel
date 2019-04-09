@@ -245,11 +245,11 @@ function mapShipmentRequestToAvroShipmentRequest(body){
     shipmentRequest.productId = body.productId;
     shipmentRequest.customer = body.customer;
     shipmentRequest.deliveryAddress = {};
-    shipmentRequest.deliveryAddress.streetName = body.deliveryAddress.streetName;
-    shipmentRequest.deliverAddress.streetNumber = body.deliveryAddress.streetNumber;
-    shipmentRequest.deliveryAddress.city = body.deliveryAddress.city;
-    shipmentRequest.deliveryAddres.postcode = body.deliveryAddress.postcode;
-    shipmentRequest.deliveryAddress.country = body.deliveryAddress.country;
+    shipmentRequest.deliveryAddress.streetName = body.shippingAddress.streetName;
+    shipmentRequest.deliverAddress.streetNumber = body.shippingAddress.streetNumber;
+    shipmentRequest.deliveryAddress.city = body.shippingAddress.city;
+    shipmentRequest.deliveryAddres.postcode = body.shippingAddress.postcode;
+    shipmentRequest.deliveryAddress.country = body.shippingAddress.country;
     return shipmentRequest;
 }
 
