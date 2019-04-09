@@ -16,6 +16,7 @@ services:
         KAFKA_SHIPMENT_OFFER_TOPIC: 'soaring-shipmentoffer'
         KAFKA_SHIPMENT_PICKEDUP_TOPIC: 'soaring-shipmentpickedup'
         KAFKA_SHIPMENT_RECEIVED_TOPIC: 'soaring-shipmentreceived'
+	KAFKA_SHIPMENT_REQUEST_ISSUED_TOPIC: 'soaring-shipmentrequestissued'
       ports: 
        - "8070:8070"
       command: npm start
