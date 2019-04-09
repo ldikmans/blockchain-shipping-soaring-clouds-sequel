@@ -1,5 +1,4 @@
 const KafkaAvro = require('kafka-avro');
-const logger = require('./logger');
 
 var kafkaAvro;
 
@@ -21,36 +20,36 @@ exports.initKafkaAvro = function () {
                 parseOptions: {wrapUnions: true}
             }
     );
-    logger.debug("kafkaBroker: " + kafkaBrokerVar);
-    logger.debug("kafkaRegistryVar: " + kafkaRegistryVar);
+    console.log("kafkaBroker: " + kafkaBrokerVar);
+    console.log("kafkaRegistryVar: " + kafkaRegistryVar);
     kafkaAvro.init()
             .then(function () {
-                logger.info('Kafka Avro Ready to use');
+                console.info('Kafka Avro Ready to use');
 
             });
 };
 
 exports.publishShipmentOffered = function (offer) {
-    logger.debug('publising offer ' + JSON.stringify(offer));
+    console.log('publising offer ' + JSON.stringify(offer));
     kafkaAvro.getProducer({
     }).then(function (producer) {
         var topicName = SHIPMENT_OFFERED_TOPIC;
 
         producer.on('disconnected', function (arg) {
-            logger.info('producer disconnected. ' + JSON.stringify(arg));
+            console.info('producer disconnected. ' + JSON.stringify(arg));
         });
 
         producer.on('event.error', function (err) {
-            logger.error('Error from producer');
-            logger.error(err);
+            console.error('Error from producer');
+            console.error(err);
         });
 
         producer.on('delivery-report', function (err, report) {
-            logger.info('in delivery report');
+            console.info('in delivery report');
             if (err) {
-                logger.error('error occurred: ' + err);
+                console.error('error occurred: ' + err);
             } else {
-                logger.info('delivery-report: ' + JSON.stringify(report));
+                console.info('delivery-report: ' + JSON.stringify(report));
             }
         });
 
@@ -61,25 +60,25 @@ exports.publishShipmentOffered = function (offer) {
 
         var key = offer.orderId;
         //var key = 'test_key_from_real_code';
-        logger.debug('key: ' + key);
+        console.log('key: ' + key);
         if (!key) {
             key = offer.shipper + '_' + offer.orderId + '_' + offer.deliveryDate;
         }
         var partition = -1;
         newOffer = mapOfferToAvroOffer(offer);
-        logger.debug('newOffer: ' + JSON.stringify(newOffer));
+        console.log('newOffer: ' + JSON.stringify(newOffer));
         producer.produce(topic, partition, newOffer, key);
 
 
 
     }).catch(function (exception) {
-        logger.error("exception: " + exception);
+        console.error("exception: " + exception);
     });
 
 };
 
 exports.publishShipmentRequestReceived = function (shipmentRequest){
-    logger.debug('publishing shipment request received' + JSON.stringify(shipmentRequest));
+    console.log('publishing shipment request received' + JSON.stringify(shipmentRequest));
       kafkaAvro.getProducer({
     })
 
@@ -87,19 +86,19 @@ exports.publishShipmentRequestReceived = function (shipmentRequest){
                 var topicName = SHIPMENT_RECEIVED_TOPIC;
 
                 producer.on('disconnected', function (arg) {
-                    logger.info('producer disconnected. ' + JSON.stringify(arg));
+                    console.info('producer disconnected. ' + JSON.stringify(arg));
                 });
 
                 producer.on('event.error', function (err) {
-                    logger.error('Error from producer');
-                    logger.error(err);
+                    console.error('Error from producer');
+                    console.error(err);
                 });
 
                 producer.on('delivery-report', function (err, report) {
                     if (err) {
-                        logger.error('error: ' + err);
+                        console.error('error: ' + err);
                     } else {
-                        logger.info('delivery-report: ' + JSON.stringify(report));
+                        console.info('delivery-report: ' + JSON.stringify(report));
                     }
                 });
 
@@ -111,22 +110,22 @@ exports.publishShipmentRequestReceived = function (shipmentRequest){
 
                 var key = shipmentRequest.orderId;
                 //var key = 'test_key_from_real_code';
-                logger.debug('key: ' + key);
+                console.log('key: ' + key);
                 if (!key) {
                     key = shipmentRequest.product + '_';;
                 }
                 var partition = -1;
                 newShipmentRequest = mapShipmentRequestToAvroShipmentRequest(shipmentRequest);
-                logger.debug('newShipmentRequest: ' + JSON.stringify(newShipmentRequest));
+                console.log('newShipmentRequest: ' + JSON.stringify(newShipmentRequest));
                 producer.produce(topic, partition, newShipmentRequest, key);
             }).catch(function (exception) {
-        logger.error("exception: " + exception);
+        console.error("exception: " + exception);
     });
 
 };
 
 exports.publishShipmentPickedUp = function (shipment) {
-    logger.debug('publishing shipment picked up: ' + JSON.stringify(shipment));
+    console.log('publishing shipment picked up: ' + JSON.stringify(shipment));
     kafkaAvro.getProducer({
     })
 
@@ -134,19 +133,19 @@ exports.publishShipmentPickedUp = function (shipment) {
                 var topicName = SHIPMENT_PICKEDUP_TOPIC;
 
                 producer.on('disconnected', function (arg) {
-                    logger.info('producer disconnected. ' + JSON.stringify(arg));
+                    console.info('producer disconnected. ' + JSON.stringify(arg));
                 });
 
                 producer.on('event.error', function (err) {
-                    logger.error('Error from producer');
-                    logger.error(err);
+                    console.error('Error from producer');
+                    console.error(err);
                 });
 
                 producer.on('delivery-report', function (err, report) {
                     if (err) {
-                        logger.error('error: ' + err);
+                        console.error('error: ' + err);
                     } else {
-                        logger.info('delivery-report: ' + JSON.stringify(report));
+                        console.info('delivery-report: ' + JSON.stringify(report));
                     }
                 });
 
@@ -158,23 +157,23 @@ exports.publishShipmentPickedUp = function (shipment) {
 
                 var key = shipment.orderId;
                 //var key = 'test_key_from_real_code';
-                logger.debug('key: ' + key);
+                console.log('key: ' + key);
                 if (!key) {
                     key = shipment.product + '_' + shipment.customer;
                 }
                 var partition = -1;
                 newShipment = mapShipmentToAvroShipment(shipment);
-                logger.debug('newShipment: ' + JSON.stringify(newShipment));
+                console.log('newShipment: ' + JSON.stringify(newShipment));
                 producer.produce(topic, partition, newShipment, key);
             }).catch(function (exception) {
-        logger.error("exception: " + exception);
+        console.error("exception: " + exception);
     });
 
 };
 
 
 exports.publishShipmentReceived = function (shipment) {
-    logger.debug('publishing shipment received: ' + JSON.stringify(shipment));
+    console.log('publishing shipment received: ' + JSON.stringify(shipment));
     kafkaAvro.getProducer({
     })
 
@@ -182,19 +181,19 @@ exports.publishShipmentReceived = function (shipment) {
                 var topicName = SHIPMENT_RECEIVED_TOPIC;
 
                 producer.on('disconnected', function (arg) {
-                    logger.info('producer disconnected. ' + JSON.stringify(arg));
+                    console.info('producer disconnected. ' + JSON.stringify(arg));
                 });
 
                 producer.on('event.error', function (err) {
-                    logger.error('Error from producer');
-                    logger.error(err);
+                    console.error('Error from producer');
+                    console.error(err);
                 });
 
                 producer.on('delivery-report', function (err, report) {
                     if (err) {
-                        logger.error('error: ' + err);
+                        console.error('error: ' + err);
                     } else {
-                        logger.info('delivery-report: ' + JSON.stringify(report));
+                        console.info('delivery-report: ' + JSON.stringify(report));
                     }
                 });
 
@@ -206,16 +205,16 @@ exports.publishShipmentReceived = function (shipment) {
 
                 var key = shipment.orderId;
                 //var key = 'test_key_from_real_code';
-                logger.debug('key: ' + key);
+                console.log('key: ' + key);
                 if (!key) {
                     key = shipment.product + '_' + shipment.customer;
                 }
                 var partition = -1;
                 newShipment = mapShipmentToAvroShipment(shipment);
-                logger.debug('newShipment: ' + JSON.stringify(newShipment));
+                console.log('newShipment: ' + JSON.stringify(newShipment));
                 producer.produce(topic, partition, newShipment, key);
             }).catch(function (exception) {
-        logger.error("exception: " + exception);
+        console.error("exception: " + exception);
     });
 
 };
