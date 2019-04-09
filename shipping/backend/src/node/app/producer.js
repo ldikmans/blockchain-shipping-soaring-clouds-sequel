@@ -119,10 +119,10 @@ exports.publishShipmentRequestReceived = function (shipmentRequest) {
                 var partition = -1;
                 newShipmentRequest = mapShipmentRequestToAvroShipmentRequest(shipmentRequest);
                 console.log('newShipmentRequest: ' + JSON.stringify(newShipmentRequest));
-                producer.produce(topic, partition, newShipmentRequest, key);
-            }).catch(function (exception) {
-        console.error("exception: " + exception);
-    });
+                producer.produce(topic, partition, newShipmentRequest, key).then(function(error){
+                    console.error(error);
+                });
+            });
 
 };
 
