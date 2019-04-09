@@ -240,7 +240,7 @@ function mapOfferToAvroOffer(body) {
 function mapShipmentRequestToAvroShipmentRequest(body){
     var shipmentRequest = {};
     
-    shipmentRequest.date = Math.round((new Date(body.date)).getTime() / 1000;
+    shipmentRequest.date = Math.round((new Date(body.date)).getTime() / 1000);
     shipmentRequest.orderId = body.orderId;
     shipmentRequest.productId = body.productId;
     shipmentRequest.deliveryAddress = {};
