@@ -50,7 +50,20 @@ exports.issueShipmentRequest = async function (req, res, next) {
         requestBody.args = mapper.mapRequestBodyToArgs(req.body);
         requestBody.args.push(CUSTODIAN_WEBSHOP);
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
-        res.send(responseBody);
+        logger.debug('result is: ' + result);
+        if (result === 'Success') {
+            logger.debug('publish is: ' + publish);
+            if (publish) {
+                let eventToPublish = req.body;
+                logger.debug("publishing receive event: " + JSON.stringify(eventToPublish));
+                publisher.publishShipmentReceived(eventToPublish);
+            }
+            res.send(responseBody);
+
+        } else {
+            logger.error(responseBody);
+            res.status(500).send(responseBody);
+        }
     } catch (error) {
         logger.error(error);
         next(error);
