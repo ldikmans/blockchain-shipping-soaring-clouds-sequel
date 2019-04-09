@@ -61,9 +61,6 @@ exports.publishShipmentOffered = function (offer) {
         var key = offer.orderId;
         //var key = 'test_key_from_real_code';
         console.log('key: ' + key);
-        if (!key) {
-            key = offer.shipper + '_' + offer.orderId + '_' + offer.deliveryDate;
-        }
         var partition = -1;
         newOffer = mapOfferToAvroOffer(offer);
         console.log('newOffer: ' + JSON.stringify(newOffer));
@@ -83,7 +80,6 @@ exports.publishShipmentRequestReceived = function (shipmentRequest) {
     })
 
             .then(function (producer) {
-                var topicName = SHIPMENT_RECEIVED_TOPIC;
 
                 producer.on('disconnected', function (arg) {
                     console.info('producer disconnected. ' + JSON.stringify(arg));
@@ -104,7 +100,7 @@ exports.publishShipmentRequestReceived = function (shipmentRequest) {
                 });
 
 
-                var topic = producer.Topic(topicName, {
+                var topic = producer.Topic(SHIPMENT_REQUEST_ISSUED_TOPIC, {
                     'request.required.acks': 1
                 });
 
@@ -119,9 +115,7 @@ exports.publishShipmentRequestReceived = function (shipmentRequest) {
                 var partition = -1;
                 newShipmentRequest = mapShipmentRequestToAvroShipmentRequest(shipmentRequest);
                 console.log('newShipmentRequest: ' + JSON.stringify(newShipmentRequest));
-                producer.produce(topic, partition, newShipmentRequest, key).then(function(error){
-                    console.error(error);
-                });
+                producer.produce(topic, partition, newShipmentRequest, key);
             });
 
 };
@@ -132,9 +126,7 @@ exports.publishShipmentPickedUp = function (shipment) {
     })
 
             .then(function (producer) {
-                var topicName = SHIPMENT_PICKEDUP_TOPIC;
-
-                producer.on('disconnected', function (arg) {
+               producer.on('disconnected', function (arg) {
                     console.info('producer disconnected. ' + JSON.stringify(arg));
                 });
 
@@ -152,7 +144,7 @@ exports.publishShipmentPickedUp = function (shipment) {
                 });
 
 
-                var topic = producer.Topic(topicName, {
+                var topic = producer.Topic(SHIPMENT_PICKEDUP_TOPIC, {
                     'request.required.acks': 1
                 });
 
@@ -178,7 +170,6 @@ exports.publishShipmentReceived = function (shipment) {
     })
 
             .then(function (producer) {
-                var topicName = SHIPMENT_RECEIVED_TOPIC;
 
                 producer.on('disconnected', function (arg) {
                     console.info('producer disconnected. ' + JSON.stringify(arg));
