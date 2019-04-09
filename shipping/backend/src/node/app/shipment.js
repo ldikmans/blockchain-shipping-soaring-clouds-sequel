@@ -53,11 +53,9 @@ exports.issueShipmentRequest = async function (req, res, next) {
         let result = responseBody.returnCode;
         logger.debug('result is: ' + result);
         if (result === 'Success') {
-            logger.debug('publish is: ' + publish);
             if (publish) {
                 let eventToPublish = req.body;
-                logger.debug("publishing receive event: " + JSON.stringify(eventToPublish));
-                publisher.publishShipmentReceived(eventToPublish);
+                publisher.publishShipmentRequestReceived(eventToPublish);
             }
             res.send(responseBody);
         }else if (result === 'Failure'){
