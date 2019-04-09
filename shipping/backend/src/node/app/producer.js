@@ -10,7 +10,7 @@ var kafkaRegistryVar = process.env.KAFKA_REGISTRY || 'http://130.61.35.61:8081';
 const SHIPMENT_OFFERED_TOPIC = process.env.KAFKA_SHIPMENT_OFFER_TOPIC || 'soaring-shipmentoffer';
 const SHIPMENT_PICKEDUP_TOPIC = process.env.KAFKA_SHIPMENT_PICKEDUP_TOPIC || 'soaring-shipmentpickedup';
 const SHIPMENT_RECEIVED_TOPIC = process.env.KAFKA_SHIPMENT_RECEIVED_TOPIC || 'soaring-shipmentreceived';
-const SHIPMENT_REQUEST_ISSUED_TOPIC = process.env.KAFKA_SHIPMENT_REQUEST_ISSUED_TOPIC || 'soaring-shipmentrequestissue';
+const SHIPMENT_REQUEST_ISSUED_TOPIC = process.env.KAFKA_SHIPMENT_REQUEST_ISSUED_TOPIC || 'soaring-shipmentrequestissued';
 
 
 exports.initKafkaAvro = function () {
@@ -199,7 +199,7 @@ exports.publishShipmentReceived = function (shipment) {
                 });
 
 
-                var topic = producer.Topic(topicName, {
+                var topic = producer.Topic(SHIPMENT_RECEIVED_TOPIC, {
                     'request.required.acks': 1
                 });
 
@@ -245,7 +245,7 @@ function mapShipmentRequestToAvroShipmentRequest(body){
     shipmentRequest.productId = body.productId;
     shipmentRequest.customer = body.customer;
     shipmentRequest.deliveryAddress = {};
-    shipmentRequest.deliveryAddress.type=body.shippingAddress.type || 'SHIPPING';
+    shipmentRequest.deliveryAddress.type= body.shippingAddress.type || 'SHIPPING';
     shipmentRequest.deliveryAddress.streetName = body.shippingAddress.streetName;
     shipmentRequest.deliveryAddress.streetNumber = body.shippingAddress.streetNumber;
     shipmentRequest.deliveryAddress.city = body.shippingAddress.city;
