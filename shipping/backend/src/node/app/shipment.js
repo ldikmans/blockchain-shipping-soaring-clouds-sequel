@@ -61,12 +61,12 @@ exports.issueShipmentRequest = async function (req, res, next) {
             }
             res.send(responseBody);
         }else if (result === 'Failure'){
-            let message = JSON.parse(responseBody.info.peerError[0].errMsg.Error);
+            let message = JSON.parse(responseBody.info.peerErrors[0].errMsg.Error);
             if(message.indexOF("This shipment already exists:") !== -1){
                 res.status(200).send("This shipment already exists: " + req.orderId);
             } else{
                 logger.error(responseBody);
-            res.status(500).send(responseBody);
+                res.status(500).send(responseBody);
             }
         } else {
             logger.error(responseBody);
