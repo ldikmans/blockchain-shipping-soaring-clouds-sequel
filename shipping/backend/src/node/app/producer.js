@@ -96,6 +96,7 @@ exports.publishShipmentRequestReceived = function (shipmentRequest){
 
                 producer.on('delivery-report', function (err, report) {
                     if (err) {
+                        console.log('on error delivery report');
                         console.error('error: ' + err);
                     } else {
                         console.info('delivery-report: ' + JSON.stringify(report));

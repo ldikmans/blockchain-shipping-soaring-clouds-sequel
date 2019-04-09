@@ -27,7 +27,7 @@ sasl2-bin
 # Install kafka-avro
 RUN npm install express --save
 RUN npm install body-parser --save
-RUN npm install kafka-avro --safe
+RUN npm install kafka-avro --save
 RUN npm install
 
 # start command
