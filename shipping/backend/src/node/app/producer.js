@@ -10,6 +10,7 @@ var kafkaRegistryVar = process.env.KAFKA_REGISTRY || 'http://130.61.35.61:8081';
 const SHIPMENT_OFFERED_TOPIC = process.env.KAFKA_SHIPMENT_OFFER_TOPIC || 'soaring-shipmentoffer';
 const SHIPMENT_PICKEDUP_TOPIC = process.env.KAFKA_SHIPMENT_PICKEDUP_TOPIC || 'soaring-shipmentpickedup';
 const SHIPMENT_RECEIVED_TOPIC = process.env.KAFKA_SHIPMENT_RECEIVED_TOPIC || 'soaring-shipmentreceived';
+const SHIPMENT_REQUEST_ISSUED_TOPIC = process.env.KAFKA_SHIPMENT_REQUEST_ISSUED_TOPIC || 'soaring-shipmentrequestissue';
 
 
 exports.initKafkaAvro = function () {
@@ -72,6 +73,53 @@ exports.publishShipmentOffered = function (offer) {
 
 
     }).catch(function (exception) {
+        logger.error("exception: " + exception);
+    });
+
+};
+
+exports.publishShipmentRequestReceived = function (shipmentRequest){
+    logger.debug('publishing shipment request received' + JSON.stringify(shipmentRequest));
+      kafkaAvro.getProducer({
+    })
+
+            .then(function (producer) {
+                var topicName = SHIPMENT_RECEIVED_TOPIC;
+
+                producer.on('disconnected', function (arg) {
+                    logger.info('producer disconnected. ' + JSON.stringify(arg));
+                });
+
+                producer.on('event.error', function (err) {
+                    logger.error('Error from producer');
+                    logger.error(err);
+                });
+
+                producer.on('delivery-report', function (err, report) {
+                    if (err) {
+                        logger.error('error: ' + err);
+                    } else {
+                        logger.info('delivery-report: ' + JSON.stringify(report));
+                    }
+                });
+
+
+                var topic = producer.Topic(topicName, {
+                    'request.required.acks': 1
+                });
+
+
+                var key = shipmentRequest.orderId;
+                //var key = 'test_key_from_real_code';
+                logger.debug('key: ' + key);
+                if (!key) {
+                    key = shipmentRequest.product + '_';;
+                }
+                var partition = -1;
+                newShipmentRequest = mapShipmentRequestToAvroShipmentRequest(shipmentRequest);
+                logger.debug('newShipmentRequest: ' + JSON.stringify(newShipmentRequest));
+                producer.produce(topic, partition, newShipmentRequest, key);
+            }).catch(function (exception) {
         logger.error("exception: " + exception);
     });
 
@@ -174,9 +222,7 @@ exports.publishShipmentReceived = function (shipment) {
 
 function mapOfferToAvroOffer(body) {
    
-   if(!body.trackingInfo){
-       let trackingInfo = false;
-   }
+   let trackingInfo = body.trackingInfo || false;
 
     var offer = {};
 
@@ -185,11 +231,26 @@ function mapOfferToAvroOffer(body) {
     offer.deliveryDate = Math.round((new Date(body.deliveryDate)).getTime() / 1000);
     offer.price = body.price;
     offer.orderId = body.orderId;
-    offer.trackingInfo = {"boolean": false};
+    offer.trackingInfo = {"boolean": trackingInfo};
 
     return offer;
 }
 ;
+
+function mapShipmentRequestToAvroShipmentRequest(body){
+    var shipmentRequest = {};
+    
+    shipmentRequest.date = Math.round((new Date(body.date)).getTime() / 1000;
+    shipmentRequest.orderId = body.orderId;
+    shipmentRequest.productId = body.productId;
+    shipmentRequest.deliveryAddress = {};
+    shipmentRequest.deliveryAddress.streetName = body.deliveryAddress.streetName;
+    shipmentRequest.deliverAddress.streetNumber = body.deliveryAddress.streetNumber;
+    shipmentRequest.deliveryAddress.city = body.deliveryAddress.city;
+    shipmentRequest.deliveryAddres.postcode = body.deliveryAddress.postcode;
+    shipmentRequest.deliveryAddress.country = body.deliveryAddress.country;
+    return shipmentRequest;
+}
 
 function mapShipmentToAvroShipment(body) {
 
