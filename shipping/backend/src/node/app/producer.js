@@ -77,9 +77,9 @@ exports.publishShipmentOffered = function (offer) {
 
 };
 
-exports.publishShipmentRequestReceived = function (shipmentRequest){
+exports.publishShipmentRequestReceived = function (shipmentRequest) {
     console.log('publishing shipment request received' + JSON.stringify(shipmentRequest));
-      kafkaAvro.getProducer({
+    kafkaAvro.getProducer({
     })
 
             .then(function (producer) {
@@ -113,7 +113,8 @@ exports.publishShipmentRequestReceived = function (shipmentRequest){
                 //var key = 'test_key_from_real_code';
                 console.log('key: ' + key);
                 if (!key) {
-                    key = shipmentRequest.product + '_';;
+                    key = shipmentRequest.product + '_';
+                    ;
                 }
                 var partition = -1;
                 newShipmentRequest = mapShipmentRequestToAvroShipmentRequest(shipmentRequest);
@@ -166,9 +167,7 @@ exports.publishShipmentPickedUp = function (shipment) {
                 newShipment = mapShipmentToAvroShipment(shipment);
                 console.log('newShipment: ' + JSON.stringify(newShipment));
                 producer.produce(topic, partition, newShipment, key);
-            }).catch(function (exception) {
-        console.error("exception: " + exception);
-    });
+            });
 
 };
 
@@ -221,8 +220,8 @@ exports.publishShipmentReceived = function (shipment) {
 };
 
 function mapOfferToAvroOffer(body) {
-   
-   let trackingInfo = body.trackingInfo || false;
+
+    let trackingInfo = body.trackingInfo || false;
 
     var offer = {};
 
@@ -237,15 +236,15 @@ function mapOfferToAvroOffer(body) {
 }
 ;
 
-function mapShipmentRequestToAvroShipmentRequest(body){
+function mapShipmentRequestToAvroShipmentRequest(body) {
     var shipmentRequest = {};
-    
+
     shipmentRequest.date = Math.round((new Date(body.orderDate)).getTime() / 1000);
     shipmentRequest.orderId = body.orderId;
     shipmentRequest.productId = body.productId;
     shipmentRequest.customer = body.customer;
     shipmentRequest.deliveryAddress = {};
-    shipmentRequest.deliveryAddress.type= body.shippingAddress.type || 'SHIPPING';
+    shipmentRequest.deliveryAddress.type = body.shippingAddress.type || 'SHIPPING';
     shipmentRequest.deliveryAddress.streetName = body.shippingAddress.streetName;
     shipmentRequest.deliveryAddress.streetNumber = body.shippingAddress.streetNumber;
     shipmentRequest.deliveryAddress.city = body.shippingAddress.city;
@@ -261,7 +260,7 @@ function mapShipmentToAvroShipment(body) {
     pickup.orderId = body.orderId;
     pickup.shipper = body.shipper;
     pickup.pickupDate = Math.round((new Date(body.date)).getTime() / 1000);
-    
+
     return pickup;
 }
 ;
