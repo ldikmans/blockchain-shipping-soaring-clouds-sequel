@@ -246,9 +246,9 @@ function mapShipmentRequestToAvroShipmentRequest(body){
     shipmentRequest.customer = body.customer;
     shipmentRequest.deliveryAddress = {};
     shipmentRequest.deliveryAddress.streetName = body.shippingAddress.streetName;
-    shipmentRequest.deliverAddress.streetNumber = body.shippingAddress.streetNumber;
+    shipmentRequest.deliveryAddress.streetNumber = body.shippingAddress.streetNumber;
     shipmentRequest.deliveryAddress.city = body.shippingAddress.city;
-    shipmentRequest.deliveryAddres.postcode = body.shippingAddress.postcode;
+    shipmentRequest.deliveryAddress.postcode = body.shippingAddress.postcode;
     shipmentRequest.deliveryAddress.country = body.shippingAddress.country;
     return shipmentRequest;
 }
