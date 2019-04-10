@@ -114,9 +114,15 @@ exports.publishShipmentRequestReceived = function (shipmentRequest) {
                 }
                 var partition = -1;
                 newShipmentRequest = mapShipmentRequestToAvroShipmentRequest(shipmentRequest);
-                console.log('newShipmentRequest: ' + JSON.stringify(newShipmentRequest));
-                producer.produce(topic, partition, newShipmentRequest, key);
-            });
+                try {
+                    producer.produce(topic, partition, newShipmentRequest, key);
+                } catch (error) {
+                    console.log('logging error after producing');
+                    console.error(error);
+                }
+            }).catch(function (exception) {
+        console.error("exception: " + exception);
+    });
 
 };
 
@@ -126,7 +132,7 @@ exports.publishShipmentPickedUp = function (shipment) {
     })
 
             .then(function (producer) {
-               producer.on('disconnected', function (arg) {
+                producer.on('disconnected', function (arg) {
                     console.info('producer disconnected. ' + JSON.stringify(arg));
                 });
 
@@ -159,7 +165,10 @@ exports.publishShipmentPickedUp = function (shipment) {
                 newShipment = mapShipmentToAvroShipment(shipment);
                 console.log('newShipment: ' + JSON.stringify(newShipment));
                 producer.produce(topic, partition, newShipment, key);
-            });
+            }).catch(function (exception) {
+        console.error("exception: " + exception);
+    });
+    ;
 
 };
 
@@ -232,7 +241,7 @@ function mapShipmentRequestToAvroShipmentRequest(body) {
 
     shipmentRequest.date = Math.round((new Date(body.orderDate)).getTime() / 1000);
     shipmentRequest.orderId = body.orderId;
-    shipmentRequest.productId = body.productId;
+    shipmentRequest.productId = body.product;
     shipmentRequest.customer = body.customer;
     shipmentRequest.deliveryAddress = {};
     shipmentRequest.deliveryAddress.type = body.shippingAddress.type || 'SHIPPING';
