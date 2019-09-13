@@ -1,66 +1,60 @@
-apiVersion: shipping-backend-ms/v1
-kind: Deployment
-metadata:
-    labels:
-        app:shipping-backend-ms
-    name: shipping-backend-ms
-spec:
-  selector:
-    matchLabels:
-      app: shipping-backend-ms
-    replicas: 1
-    template:
-      metadata:
-        labels:
-          app:shipping-backend-ms
-        spec:
-          containers:
-            -image: lonneke/shipping-backend-ms:1.0.0
-            name: shipping-backend
-            ports:
-                -containerPort:8070
-                hostPort:8070
-      env:
-        -name: LOG_LEVEL
-         value:"debug"
-        -name: PORT
-         value:"8070"
-        -name: CHANNEL
-         value:"testshipping"
-        -name: CHAINCODE
-         value:"shipment"
-        -name: VERSION
-         value:"1.1.1"
-        -name: KAFKA_BROKER
-         value:"130.61.35.61:9092"
-        -name: KAFKA_REGISTRY
-         value:"http://130.61.35.61:8081"
-        -name: PUBLISH
-         value:"true"
-        -name: KAFKA_SHIPMENT_OFFER_TOPIC 
-         value:"soaring-shipmentoffer"
-        -name: KAFKA_SHIPMENT_PICKEDUP_TOPIC
-         value:"soaring-shipmentpickedup"
-        -name: KAFKA_SHIPMENT_RECEIVED_TOPIC
-         value:"soaring-shipmentreceived"
-        -name: KAFKA_SHIPMENT_REQUEST_ISSUED_TOPIC
-         value:"soaring-shipmentrequestissued" 
-      ports: 
-        - name: http
-          containerPort: 8070
 apiVersion: v1
 kind: Service
 metadata:
   name: shipping-backend-ms
   labels:
-    app: shipping-backend
-    tier: backend
+    app: shipping-backend-ms
 spec:
   type: LoadBalancer
   selector:
     app: shipping-backend-ms
-    tier: backend
   ports:
   - port: 8002
     protocol: TCP
-    targetPort: 8003
+    targetPort: 8070
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipping-backend-ms
+spec:
+  selector:
+    matchLabels:
+      app: shipping-backend-ms
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: shipping-backend-ms
+    spec:
+      containers:
+      - name: shipping-backend-ms
+        image: lonneke/shipping-backend-ms:1.0.0
+        env:
+        - name: LOG_LEVEL
+          value: "debug"
+        - name: PORT
+          value: "8070"
+        - name: CHANNEL
+          value: "testshipping"
+        - name: CHAINCODE
+          value: "shipment"
+        - name: VERSION
+          value: "1.1.1"
+        - name: KAFKA_BROKER
+          value: "130.61.35.61:9092"
+        - name: KAFKA_REGISTRY
+          value: "http://130.61.35.61:8081"
+        - name: PUBLISH
+          value: "true"
+        - name: KAFKA_SHIPMENT_OFFER_TOPIC 
+          value: "soaring-shipmentoffer"
+        - name: KAFKA_SHIPMENT_PICKEDUP_TOPIC
+          value: "soaring-shipmentpickedup"
+        - name: KAFKA_SHIPMENT_RECEIVED_TOPIC
+          value: "soaring-shipmentreceived"
+        - name: KAFKA_SHIPMENT_REQUEST_ISSUED_TOPIC
+          value: "soaring-shipmentrequestissued" 
+        ports: 
+        - name: http
+          containerPort: 8070
