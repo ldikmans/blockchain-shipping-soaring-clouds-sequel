@@ -50,7 +50,30 @@ exports.issueShipmentRequest = async function (req, res, next) {
         requestBody.args = mapper.mapRequestBodyToArgs(req.body);
         requestBody.args.push(CUSTODIAN_WEBSHOP);
         let responseBody = await chaincodeapi.invokeMethod(requestBody);
-        res.send(responseBody);
+        let result = responseBody.returnCode;
+        logger.debug('result is: ' + result);
+        if (result === 'Success') {
+            if (publish) {
+                let eventToPublish = req.body;
+                publisher.publishShipmentRequestReceived(eventToPublish);
+            }
+            res.send(responseBody);
+        }else if (result === 'Failure'){
+            let errorMessage = responseBody.info.peerErrors[0].errMsg;
+            console.log(errorMessage);
+            if(errorMessage.indexOf("This shipment already exists:") !== -1){
+                let error = {
+                    'message': 'this shipment already exists' + req.body.orderId
+                };
+                res.status(200).send(error);
+            } else{
+                logger.error(responseBody);
+                res.status(500).send(responseBody);
+            }
+        } else {
+            logger.error(responseBody);
+            res.status(500).send(responseBody);
+        }
     } catch (error) {
         logger.error(error);
         next(error);
@@ -94,6 +117,7 @@ exports.getHistory = async function (req, res, next) {
         let result = responseBody.returnCode;
         if (result === 'Success') {
             let jsonResponseBody = JSON.parse(responseBody.result.payload);
+            logger.debug('jsonResponseBody:' + jsonResponseBody);
             let shipmentsHistory = [];
             if (jsonResponseBody && jsonResponseBody.length > 0) {
                 for (i = 0; i < jsonResponseBody.length; i++) {
@@ -103,7 +127,7 @@ exports.getHistory = async function (req, res, next) {
             }
             res.send(shipmentsHistory);
         } else if (result === 'Failure') {
-            logger.error(responseBody.info.peerErrors[0].errMsg);
+            logger.error(JSON.parse(responseBody.info.peerErrors[0].errMsg));
             throw new Error('unable to find shipment with orderId ' + orderId);
         } else {
             logger.error(JSON.stringify(responseBody));

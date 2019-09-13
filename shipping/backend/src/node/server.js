@@ -170,7 +170,7 @@ app.route('/shippermarketplace/offers')
                 offer.selectOffer(req, res, next);
             }catch(error){
                 next(error);
-            }
+            };
         });
 
 
