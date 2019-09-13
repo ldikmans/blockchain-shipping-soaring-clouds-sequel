@@ -31,4 +31,4 @@ RUN npm install kafka-avro --save
 RUN npm install
 
 # start command
-CMD [ “npm”, “start” ]
+CMD [ "npm", "start" ]
