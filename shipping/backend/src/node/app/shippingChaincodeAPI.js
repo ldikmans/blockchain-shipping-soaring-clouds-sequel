@@ -4,7 +4,7 @@ const requestPromise = require('request-promise');
 const blockchainURL = process.env.BLOCKCHAINURL || "https://8079FF3CB5414DF58C70FC643899CCED.blockchain.ocp.oraclecloud.com:443";
 const restproxy = process.env.RESTPROXY || '/restproxy4';
 const resource = process.env.RESOURCE || '/bcsgw/rest/v1/transaction';
-const username =  'systemaccount';
+const username =  process.env.USERNAME || 'systemaccount';
 const password = process.env.PASSWORD || 'Welcome1welcome1';
 const channel = process.env.CHANNEL || 'testshipping';
 
