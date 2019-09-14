@@ -29,10 +29,12 @@ spec:
     spec:
       containers:
       - name: shipping-backend-ms
-        image: lonneke/shipping-backend-ms:1.0.1
+        image: lonneke/shipping-backend-ms:1.1.1
         env:
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
         - name: BLOCKCHAINURL
-          value: "https://130.61.43.110:22018"
+          value: "https://130.61.43.110:22018/"
         - name: RESTPROXY
           value: "restproxy1"
         - name: USERNAME
