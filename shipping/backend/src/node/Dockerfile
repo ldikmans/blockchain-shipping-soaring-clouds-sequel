@@ -1,5 +1,5 @@
 #  Node based on Debian GNU/Linux 8 -must be used as kafka-avro errors with non-debian based distros
-FROM node
+FROM node:10
 
 # Create Subscriber Service directory and copy source to it
 RUN mkdir -p /usr/src/ms
@@ -31,4 +31,5 @@ RUN npm install kafka-avro --save
 RUN npm install
 
 # start command
+EXPOSE 8070
 CMD [ "npm", "start" ]
