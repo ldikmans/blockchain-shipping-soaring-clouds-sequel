@@ -124,6 +124,9 @@ exports.mapRequestBodyToArgs = function(body) {
     return args;
 }
 ;
+exports.mapDateStringToInt = function(dateString){
+    return mapDateToInt(dateString);
+};
 
 /**
  * 

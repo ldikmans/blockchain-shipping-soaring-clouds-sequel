@@ -126,7 +126,8 @@ exports.offerDelivery = async function (req, res, next) {
         if (!req.body.deliveryDate) {
             throw new Error('deliveryDate is mandatory');
         }
-        requestBody.args.push(req.body.deliveryDate);
+        
+        requestBody.args.push(mapper.mapDateStringToInt(req.body.deliveryDate));
         if( req.body.trackingInfo){
             requestBody.args.push(req.body.trackingInfo);
         }
