@@ -136,8 +136,10 @@ exports.offerDelivery = async function (req, res, next) {
         if (result === 'Success') {
             let offer = req.body;
             let price = parseFloat(req.body.price);
+            let trackingInfo = (req.body.trackingInfo === "true");
             offer.offerId = offerId;
             offer.price = price;
+            offer.trackingInfo = trackingInfo;
             if(publish){
                 logger.debug("publishing offer: " + JSON.stringify(offer));
                 publisher.publishShipmentOffered(offer);

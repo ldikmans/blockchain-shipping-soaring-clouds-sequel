@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
       - name: shipping-backend-ms
-        image: lonneke/shipping-backend-ms:1.1.5
+        image: lonneke/shipping-backend-ms:1.1.7
         env:
         - name: NODE_TLS_REJECT_UNAUTHORIZED
           value: "0"
