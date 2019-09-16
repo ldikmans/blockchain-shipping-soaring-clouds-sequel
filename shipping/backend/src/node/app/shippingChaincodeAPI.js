@@ -79,6 +79,7 @@ function checkStatus(txid, channel) {
 };
 
 exports.invokeQuery = async function (requestBody) {
+    console.log("username: " + username);
     return requestPromise({
         url: blockchainURL + restproxy + resource + '/query',
         method: "POST",
