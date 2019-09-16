@@ -135,7 +135,7 @@ exports.offerDelivery = async function (req, res, next) {
         let result = responseBody.returnCode;
         if (result === 'Success') {
             let offer = req.body;
-            let price = pareFloat(req.body.price);
+            let price = parseFloat(req.body.price);
             offer.offerId = offerId;
             offer.price = price;
             if(publish){
