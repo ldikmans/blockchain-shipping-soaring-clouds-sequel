@@ -665,7 +665,7 @@ var Chaincode = class {
             throw new Error("Incorrect number of arguments. Expecting orderId");
         }
         let orderId = args[0];
-        let queryString = util.format("SELECT json_extract(valueJson, '$.offers') FROM <STATE> WHERE json_extract(valueJson, '$.docType') = 'shipment' AND json_extract(valueJson, '$.orderId') = \"%s\"]'", orderId);
+        let queryString = util.format("SELECT json_extract(valueJson, '$.offers') FROM <STATE> WHERE json_extract(valueJson, '$.docType','$.orderId') = '[\"shipment\",\"%s\"]'", orderId);
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
@@ -682,7 +682,7 @@ var Chaincode = class {
             throw new Error("Incorrect number of arguments. Expecting offerId");
         }
         let offerId = args[0];
-        let queryString = util.format("SELECT json_extract(valueJson, '$.offers') FROM <STATE> WHERE json_extract(valueJson, '$.docType') = 'shipment' AND json_extract(valueJson, '$.offerId') = \"%s\"]'", offerId);
+        let queryString = util.format("SELECT json_extract(valueJson, '$.offers') FROM <STATE> WHERE json_extract(valueJson, '$.docType'), '$.offerId') ='[\"shipment\",\"%s\"]", offerId);
 
         let method = thisClass['getQueryResultForQueryString'];
         let queryResults = await method(stub, queryString, thisClass);
