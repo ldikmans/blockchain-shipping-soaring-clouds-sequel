@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d6f76d16-408c-47aa-a3d6-8c08432d4144",
+		"_postman_id": "4d0ac0e1-d629-4991-a58c-f373b8a54f4f",
 		"name": "Chaincode shipping (blockchain)",
 		"description": "Collection to test the shipping chaincode",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -123,13 +123,13 @@
 					"type": "basic",
 					"basic": [
 						{
-							"key": "username",
-							"value": "{{userbc}}",
+							"key": "password",
+							"value": "{{password_bc}}",
 							"type": "string"
 						},
 						{
-							"key": "password",
-							"value": "{{passwordbc}}",
+							"key": "username",
+							"value": "{{user_bc}}",
 							"type": "string"
 						}
 					]
@@ -145,15 +145,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"args\":[{{offerId}},{{orderId}},\"EdFex\",\"4.50\",\"0400\"],\n\t\"channel\": \"{{channel}}\",\n\t\"chaincode\": \"{{chaincode}}\",\n\t\"chaincodeVer\":\"{{version}}\",\n\t\"method\": \"offerDelivery\"\n}"
+					"raw": "{\n\t\"args\":[\"23454dc9-1a0f-4f3d-ae97-390a876f5cba\",\"4bf15klil\",\"EdFex\",\"4.50\",\"0400\", \"false\"],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"offerDelivery\"\n}"
 				},
 				"url": {
-					"raw": "https://{{rest_server_url}}:{{port}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
 					"protocol": "https",
 					"host": [
-						"{{rest_server_url}}"
+						"{{soaring_bc_server}}"
 					],
-					"port": "{{port}}",
+					"port": "{{soaring_bc_host}}",
 					"path": [
 						"{{restproxy}}",
 						"bcsgw",
@@ -380,13 +380,13 @@
 					"type": "basic",
 					"basic": [
 						{
-							"key": "username",
-							"value": "{{userbc}}",
+							"key": "password",
+							"value": "{{password_bc}}",
 							"type": "string"
 						},
 						{
-							"key": "password",
-							"value": "{{passwordbc}}",
+							"key": "username",
+							"value": "{{user_bc}}",
 							"type": "string"
 						}
 					]
@@ -402,15 +402,15 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"args\":[{{orderId}}],\n\t\"channel\": \"{{channel}}\",\n\t\"chaincode\": \"{{chaincode}}\",\n\t\"chaincodeVer\":\"{{version}}\",\n\t\"method\": \"readShipment\"\n}"
+					"raw": "{\n\t\"args\":[{{orderId}}],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"readShipment\"\n}"
 				},
 				"url": {
-					"raw": "https://{{rest_server_url}}:{{port}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
 					"protocol": "https",
 					"host": [
-						"{{rest_server_url}}"
+						"{{soaring_bc_server}}"
 					],
-					"port": "{{port}}",
+					"port": "{{soaring_bc_host}}",
 					"path": [
 						"{{restproxy}}",
 						"bcsgw",
@@ -425,19 +425,19 @@
 			"response": []
 		},
 		{
-			"name": "getAllShipments",
+			"name": "getShipmentByShipper",
 			"request": {
 				"auth": {
 					"type": "basic",
 					"basic": [
 						{
-							"key": "username",
-							"value": "{{userbc}}",
+							"key": "password",
+							"value": "{{password_bc}}",
 							"type": "string"
 						},
 						{
-							"key": "password",
-							"value": "{{passwordbc}}",
+							"key": "username",
+							"value": "{{user_bc}}",
 							"type": "string"
 						}
 					]
@@ -453,15 +453,117 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"args\":[],\n\t\"channel\": \"{{channel}}\",\n\t\"chaincode\": \"{{chaincode}}\",\n\t\"chaincodeVer\":\"{{version}}\",\n\t\"method\": \"readAllShipments\"\n}\n\n"
+					"raw": "{\n\t\"args\":[{{orderId}},\"{{shipper}}\" ],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"queryShipmentByShipper\"\n}"
 				},
 				"url": {
-					"raw": "https://{{rest_server_url}}:{{port}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
 					"protocol": "https",
 					"host": [
-						"{{rest_server_url}}"
+						"{{soaring_bc_server}}"
 					],
-					"port": "{{port}}",
+					"port": "{{soaring_bc_host}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "Gets all the shipments"
+			},
+			"response": []
+		},
+		{
+			"name": "readAllOffersByOrder",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password_bc}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_bc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{orderId}}],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"readAllOffersByOrder\"\n}\n\n"
+				},
+				"url": {
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{soaring_bc_server}}"
+					],
+					"port": "{{soaring_bc_host}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "get all shipments"
+			},
+			"response": []
+		},
+		{
+			"name": "readAllOffers",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password_bc}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_bc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"readAllOffers\"\n}\n\n"
+				},
+				"url": {
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{soaring_bc_server}}"
+					],
+					"port": "{{soaring_bc_host}}",
 					"path": [
 						"{{restproxy}}",
 						"bcsgw",
