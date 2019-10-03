@@ -1,0 +1,581 @@
+{
+	"info": {
+		"_postman_id": "4d0ac0e1-d629-4991-a58c-f373b8a54f4f",
+		"name": "Chaincode shipping (blockchain)",
+		"description": "Collection to test the shipping chaincode",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "issueShipment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "033e475b-fd11-4c96-a8f9-d2cc50fd70c6",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Return code is Success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.returnCode).to.eql(\"Success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "8a71da31-560c-426d-b13a-c2fbd555b837",
+						"exec": [
+							"let currentOrderId = parseInt(pm.environment.get(\"orderId\"));",
+							"pm.environment.set(\"orderId\", currentOrderId + 1);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "{{userbc}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{passwordbc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{orderId}},\"iron\",\"John Doe\",\"Rembrandtlaan 22c Bilthoven\",\"0330\",\"webshop\"],\n\t\"channel\": \"{{channel}}\",\n\t\"chaincode\": \"{{chaincode}}\",\n\t\"chaincodeVer\":\"{{version}}\",\n\t\"method\": \"issueShipment\"\n}"
+				},
+				"url": {
+					"raw": "https://{{rest_server_url}}:{{port}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{rest_server_url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "get all shipments that have been issued"
+			},
+			"response": []
+		},
+		{
+			"name": "offerDelivery",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "617678ec-d45c-4463-ba27-03d1af891f3c",
+						"exec": [
+							"let currentOfferId= parseInt(pm.environment.get(\"offerId\"));",
+							"pm.environment.set(\"offerId\", currentOfferId + 1);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "aef9bdcd-a3cb-468d-91b8-a55e13de63b3",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Return code is Success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.returnCode).to.eql(\"Success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password_bc}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_bc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[\"23454dc9-1a0f-4f3d-ae97-390a876f5cba\",\"4bf15klil\",\"EdFex\",\"4.50\",\"0400\", \"false\"],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"offerDelivery\"\n}"
+				},
+				"url": {
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{soaring_bc_server}}"
+					],
+					"port": "{{soaring_bc_host}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "Test to offer a shipment"
+			},
+			"response": []
+		},
+		{
+			"name": "selectShipment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "8dbe0e26-3eb9-4c2c-b90f-c95a78aba7cd",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Return code is Success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.returnCode).to.eql(\"Success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "{{userbc}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{passwordbc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{offerId}}, {{orderId}}],\n\t\"channel\": \"{{channel}}\",\n\t\"chaincode\": \"{{chaincode}}\",\n\t\"chaincodeVer\":\"{{version}}\",\n\t\"method\": \"selectShipmentOffer\"\n}"
+				},
+				"url": {
+					"raw": "https://{{rest_server_url}}:{{port}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{rest_server_url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "Select a shipment from the list"
+			},
+			"response": []
+		},
+		{
+			"name": "pickUpShipment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2fe8d034-c73c-45ec-8473-d7b3f7c0461b",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Return code is Success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.returnCode).to.eql(\"Success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "{{userbc}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{passwordbc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{orderId}},\"EdFex\"],\n\t\"channel\": \"{{channel}}\",\n\t\"chaincode\": \"{{chaincode}}\",\n\t\"chaincodeVer\":\"{{version}}\",\n\t\"method\": \"pickupShipment\"\n}"
+				},
+				"url": {
+					"raw": "https://{{rest_server_url}}:{{port}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{rest_server_url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "send the notification that the order has been pickedup"
+			},
+			"response": []
+		},
+		{
+			"name": "receiveShipment",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6166fa2c-97e3-4e20-8d64-df655f080d2e",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Return code is Success\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.returnCode).to.eql(\"Success\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "username",
+							"value": "{{userbc}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{passwordbc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{orderId}}],\n\t\"channel\": \"{{channel}}\",\n\t\"chaincode\": \"{{chaincode}}\",\n\t\"chaincodeVer\":\"{{version}}\",\n\t\"method\": \"receiveShipment\"\n}"
+				},
+				"url": {
+					"raw": "https://{{rest_server_url}}:{{port}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{rest_server_url}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getShipment",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password_bc}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_bc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{orderId}}],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"readShipment\"\n}"
+				},
+				"url": {
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{soaring_bc_server}}"
+					],
+					"port": "{{soaring_bc_host}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "Gets all the shipments"
+			},
+			"response": []
+		},
+		{
+			"name": "getShipmentByShipper",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password_bc}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_bc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{orderId}},\"{{shipper}}\" ],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"queryShipmentByShipper\"\n}"
+				},
+				"url": {
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{soaring_bc_server}}"
+					],
+					"port": "{{soaring_bc_host}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "Gets all the shipments"
+			},
+			"response": []
+		},
+		{
+			"name": "readAllOffersByOrder",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password_bc}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_bc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[{{orderId}}],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"readAllOffersByOrder\"\n}\n\n"
+				},
+				"url": {
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{soaring_bc_server}}"
+					],
+					"port": "{{soaring_bc_host}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "get all shipments"
+			},
+			"response": []
+		},
+		{
+			"name": "readAllOffers",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password_bc}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{user_bc}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"args\":[],\n\t\"channel\": \"{{soaring_shipping_channel}}\",\n\t\"chaincode\": \"{{soaring_chaincode}}\",\n\t\"chaincodeVer\":\"{{soaring_version}}\",\n\t\"method\": \"readAllOffers\"\n}\n\n"
+				},
+				"url": {
+					"raw": "https://{{soaring_bc_server}}:{{soaring_bc_host}}/{{restproxy}}/bcsgw/rest/v1/transaction/invocation",
+					"protocol": "https",
+					"host": [
+						"{{soaring_bc_server}}"
+					],
+					"port": "{{soaring_bc_host}}",
+					"path": [
+						"{{restproxy}}",
+						"bcsgw",
+						"rest",
+						"v1",
+						"transaction",
+						"invocation"
+					]
+				},
+				"description": "get all shipments"
+			},
+			"response": []
+		}
+	]
+}
