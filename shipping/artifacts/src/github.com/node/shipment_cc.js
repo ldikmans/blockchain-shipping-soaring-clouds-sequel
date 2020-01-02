@@ -7,9 +7,10 @@ const shState = {
     ISSUED: 1,
     OFFERED: 2,
     SELECTED: 3,
-    PICKEDUP: 4,
-    RECEIVED: 5,
-    ARRIVED: 6
+    PREPARED: 4,
+    PICKEDUP: 6,
+    RECEIVED: 6,
+    ARRIVED: 7
 };
 
 var Chaincode = class {
@@ -371,6 +372,60 @@ var Chaincode = class {
 
 
     }
+    
+    /**
+     * 
+     * prepare the shipment for pickup
+     * @param {type} stub
+     * @param {type} args
+     * @param {type} thisClass
+     */
+    async prepareShipment(stub, args, thisClass) {
+
+        let jsonResp = {};
+
+        // "orderId"
+        if (args.length < 1) {
+            throw new Error("Incorrect number of arguments. Expecting 1: orderId");
+        }
+
+        let orderId = args[0];
+
+        console.info("- start preparing order ", orderId);
+
+        let shipmentAsBytes = await stub.getState(orderId);
+        if (!shipmentAsBytes.toString()) {
+            console.info("Failed to get shipment: ", orderId);
+            jsonResp.Error = "Failed to get shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+
+        let shipment = {};
+        try {
+            shipment = JSON.parse(shipmentAsBytes.toString('utf8'));
+        } catch (err) {
+            console.info("Failed to decode shipment: ", orderId);
+            jsonResp.Error = "Failed to decode shipment: " + orderId;
+            throw new Error(JSON.stringify(jsonResp));
+        }
+
+        //check if the shipment is in the state selected
+        if (shipment.currentState !== shState.SELECTED) {
+            console.info("offer can't be prepared , state is " + shipment.currentState);
+            jsonResp.Error = "offer can't be prepared, state is " + shipment.currentState;
+            throw new ERROR(JSON.stringify(jsonResp));
+        }
+
+        shipment.currentState = shState.PREPARED;
+
+        let shipmentJSONBytes = Buffer.from(JSON.stringify(shipment));
+        await stub.putState(orderId, shipmentJSONBytes); //rewrite the shipment
+
+        console.info("- end offer prepared (success)");
+
+
+
+    }
 
     /**
      *  Cancel an offer
@@ -477,7 +532,7 @@ var Chaincode = class {
         }
 
         //check if the shipment is in the state selected
-        if (shipment.currentState !== shState.SELECTED) {
+        if (shipment.currentState !== shState.PREPARED) {
             console.info("offer can't be picked up , state is " + shipment.currentState);
             jsonResp.Error = "offer can't be picked up, state is " + shipment.currentState;
             throw new ERROR(JSON.stringify(jsonResp));
